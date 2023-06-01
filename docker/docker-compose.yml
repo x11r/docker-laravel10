@@ -18,6 +18,8 @@ services:
     build: ./php
     volumes:
       - ../src:/var/www
+      - lara10-vendor:/var/www/vendor
+      - lara10-framework:/var/www/storage/framework
       - ./php/php.ini:/usr/local/etc/php/php.ini
       - ./php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
       - ./share:/share
@@ -43,3 +45,5 @@ services:
 
 volumes:
   mariadb-lara10:
+  lara10-vendor:
+  lara10-framework:
