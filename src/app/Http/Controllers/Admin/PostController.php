@@ -17,7 +17,7 @@ class PostController extends Controller
      */
     public function index()
     {
-        $posts = Post::all();
+        $posts = Post::orderByDesc('created_at')->get();
         $params = [
             'posts' => $posts,
         ];

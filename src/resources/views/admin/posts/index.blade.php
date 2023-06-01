@@ -5,10 +5,9 @@
 @section('content')
     <div class="h1">投稿一覧</div>
     @foreach ($posts as $post)
-        <div>
+        <div class="p-2 border-b-8 bg-ligh">
             <div>
-                {{ html()->a(route('admin.posts.edit',$post), $post->title) }}
-                {{ $post->title }}
+                {{ html()->a(route('admin.posts.edit',$post), $post->title)->class(['fw-bold', 'text-decoration-underline']) }}
             </div>
             <div>{{ Str::limit($post->content, 100) }}</div>
         </div>
@@ -27,11 +26,5 @@
             {{ html()->button('登録')->class('btn btn-primary') }}
         </div>
         {{ html()->form()->close() }}
-    </div>
-    <div class="row">
-        <div class="col-md-2 bg-gray-100">AA</div>
-        <div class="col-md-2 bg-gray-300">AA</div>
-        <div class="col-md-2 bg-gray-500">AA</div>
-        <div class="col-md-2 bg-gray-600">AA</div>
     </div>
 @endsection
