@@ -1,11 +1,4 @@
 <div>
-    {{-- Do your work, then step back. --}}
-    <div>
-        count: {{ $counter }}
-        <button type="button" class="btn btn-warning"
-                wire:click="increase"
-                >increase</button>
-    </div>
     @foreach ($posts as $post)
         <div class="p-2 m-2 bg-gray-100">
             <div class="row">

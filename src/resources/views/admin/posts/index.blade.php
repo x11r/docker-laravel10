@@ -8,6 +8,7 @@
 
     <livewire:post-list-livewire />
 
+    <div class="h2 mt-5">新規投稿</div>
     <div>
         {{ html()->form('post', route('admin.posts.store'))->open() }}
         <div>タイトル</div>
