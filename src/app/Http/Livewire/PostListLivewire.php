@@ -12,8 +12,6 @@ use Livewire\Component;
 
 class PostListLivewire extends Component
 {
-    public int $counter = 10;
-
     public $posts;
 
     protected $listeners = [
@@ -66,6 +64,8 @@ class PostListLivewire extends Component
             ],
             []
         );
+
+        $this->mount();
     }
 
     public function dislike($id)
@@ -78,11 +78,7 @@ class PostListLivewire extends Component
         );
 
         PostLike::where('user_id', $auth->id)->where('post_id', $id)->delete();
-    }
 
-    public function increase()
-    {
-        Log::debug(__LINE__ .' ' . __METHOD__);
-        $this->counter ++;
+        $this->mount();
     }
 }
