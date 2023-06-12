@@ -16,7 +16,6 @@ class RakutenController extends Controller
     public function __construct()
     {
         //
-
     }
 
     public function index()
@@ -68,6 +67,27 @@ class RakutenController extends Controller
         ];
 
         return view('admin.rakuten.hotel', $params);
+    }
+
+    public function hotelDetail($hotelId)
+    {
+
+        $applicationId = config('app.RAKUTEN_APPLICATION_ID');
+
+        $url = 'https://app.rakuten.co.jp/services/api/Travel/VacantHotelSearch/20170426?format=json'
+            . '&applicationId=' . $applicationId
+            . '&hotelNo=' . $hotelId;
+
+        $response = Http::get($url);
+        $body = $response->body();
+
+        $hotel = json_decode($body, true);
+
+        $params = [
+            'hotel' => $hotel['hotels'][0],
+        ];
+
+        return view('admin.rakuten.hotelDetail', $params);
     }
 
     private function getHotel($params)

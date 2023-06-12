@@ -14,6 +14,11 @@
                 </div>
                 {{ $hotel['hotel'][0]['hotelBasicInfo']['hotelSpecial'] }}
                 {{ $hotel['hotel'][0]['hotelBasicInfo']['address2'] }}
+
+                <a href="{{ route('admin.rakuten.hotel-detail',
+                    ['hotel' => $hotel['hotel'][0]['hotelBasicInfo']['hotelNo']]) }}">
+                    詳細
+                </a>
             </div>
         @endforeach
     </div>

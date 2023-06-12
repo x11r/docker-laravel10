@@ -46,6 +46,7 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
         Route::get('/', [AdminRakutenController::class,'index'])->name('index');
         Route::get('/area/{middle}', [AdminRakutenController::class, 'areaMiddle'])->name('area-middle');
         Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaSmall'])->name('area-small');
+        Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
     });
 });
 
