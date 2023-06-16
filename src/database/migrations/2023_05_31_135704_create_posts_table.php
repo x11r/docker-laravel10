@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('title')->comment('タイトル');
             $table->string('content', 1048)->comment('本文');
             $table->foreignId('user_id')->comment('投稿者');
+            $table->string('image_path')->nullable()->comment('画像パス');
             $table->timestamps();
             $table->softDeletes();
         });

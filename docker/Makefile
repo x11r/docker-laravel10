@@ -11,7 +11,12 @@ cache:
 	docker-compose exec app php artisan config:clear
 migrate:
 	docker-compose exec app /usr/local/bin/php artisan migrate
+restart:
+	docker-compose stop
+	docker-compose up -d
 stop:
 	docker-compose stop
 up:
 	docker-compose up -d
+web:
+	docker-compose exec web /bin/sh
