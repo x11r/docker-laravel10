@@ -9,6 +9,7 @@ use App\Http\Requests\Post\StoreRequest;
 use App\Models\Post;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 
 class PostController extends Controller
 {
@@ -76,6 +77,15 @@ class PostController extends Controller
     {
         $post = Post::where('id', $id)->first();
         $all = $request->all();
+
+        // 画像
+        if (isset($all['image'])) {
+            $path = $request->file('image')->store('pubilc/image');
+            $post->image_path = basename($path);
+        } else {
+            $post->image_path = null;
+        }
+
         $post->fill($all);
         $post->save();
 

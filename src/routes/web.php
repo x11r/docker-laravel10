@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\PostController as AdminPostController;
+use App\Http\Controllers\Admin\RakutenController as AdminRakutenController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -40,6 +41,15 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     Route::resources([
         'posts' => AdminPostController::class
     ]);
+
+    Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
+        Route::get('/', [AdminRakutenController::class,'index'])->name('index');
+        Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaMulti'])->name('area-small');
+        Route::get('/area/{middle}/{small}/{detail}', [AdminRakutenController::class, 'areaMulti'])
+            ->name('area-multi');
+        Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
+        Route::get('/hotelRanking', [AdminRakutenController::class, 'hotelRanking'])->name('hotel-ranking');
+    });
 });
 
 require __DIR__.'/auth.php';
