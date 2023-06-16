@@ -32,8 +32,21 @@
                             Like
                         </button>
                     @endif
+
+                    @if ($post->image_path)
+{{--                        {{ html()->img('/' . $post->image_path) }}--}}
+                        <img src="{{ asset('storage/public/image/' . basename($post->image_path)) }}"
+                    @endif
+
                 </div>
             </div>
+
         </div>
     @endforeach
+
+
+        <div>
+
+
+        </div>
 </div>
