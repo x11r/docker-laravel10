@@ -44,8 +44,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
 
     Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
         Route::get('/', [AdminRakutenController::class,'index'])->name('index');
-        Route::get('/area/{middle}', [AdminRakutenController::class, 'areaMiddle'])->name('area-middle');
-        Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaSmall'])->name('area-small');
+        Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaMulti'])->name('area-small');
+        Route::get('/area/{middle}/{small}/{detail}', [AdminRakutenController::class, 'areaMulti'])
+            ->name('area-multi');
+        Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
+        Route::get('/hotelRanking', [AdminRakutenController::class, 'hotelRanking'])->name('hotel-ranking');
     });
 });
 
