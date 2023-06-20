@@ -4,7 +4,7 @@
 
 @section('content')
     <div class="container">
-        <div class="h1">楽天API</div>
+        <div class="h1">楽天API エリア</div>
         @foreach ($areas_array['areaClasses']['largeClasses'][0]['largeClass'][1]['middleClasses'] as $middle)
             <div>
                 <div class="h4">{{ $middle['middleClass'][0]['middleClassName'] }}</div>
