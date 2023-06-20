@@ -52,7 +52,7 @@ class RakutenController extends Controller
 
     public function getSmall(string $middle, string $small)
     {
-        return $this->get(['middle' => $middle, 'small' => $small]);
+        return $this->getHotelMulti(['middle' => $middle, 'small' => $small]);
     }
 
     public function getDetail(string $middle, string $small, string $detail)
@@ -90,7 +90,7 @@ class RakutenController extends Controller
         }
 
         // キャッシュから取得
-        $cacheKey = __METHOD__;
+        $cacheKey = __METHOD__ . ' ' . $url;
 
         $cacheExpire = 60 * 60 * 24 * 3;
         $json = Cache::remember($cacheKey, $cacheExpire, function() use ($url) {
@@ -117,22 +117,28 @@ class RakutenController extends Controller
             . '&applicationId=' . $this->applicationId
             . '&hotelNo=' . $hotel;
 
-        $params = [];
-
         try {
 
             $response = Http::get($url);
             $body = $response->body();
+            $status = $response->status();
 
+            if ($status != 200) {
+                throw new Exception('情報取得できませんでした。');
+            }
+
+            // JSONを配列に変換
             $json = json_decode($body, true);
-
+            
             $params = [
                 'hotel' => $json,
             ];
 
         } catch (Exception $e) {
-//            Log::debug(__LINE__ . ' ' . __METHOD__ . ' '. $e->getMessage());
+            echo $e->getMessage();
+
             session()->flush();
+            exit();
         }
 
         return view('rakuten.hotelDetail', $params);
