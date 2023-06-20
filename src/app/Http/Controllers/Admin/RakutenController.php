@@ -78,22 +78,23 @@ class RakutenController extends Controller
         try {
 
             $response = Http::get($url);
-            $body = $response->body();
-            $json = json_decode($body, true);
+            $status = $response->status();
 
-            $hotel = $json;
+            if ($status != 200) {
+                throw new exception('ホテルの詳細情報の取得に失敗しました。 (' . $status . ')');
+            }
+
+            $body = $response->body();
+            $hotel = json_decode($body, true);
 
             $params = [
                 'hotel' => $hotel,
             ];
 
         } catch (Exception|HandleExceptions $e) {
-            Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $e->getMessage());
-
-            session()->flush();
+            echo $e->getMessage();
+            exit();
         }
-
-        dd($params['hotel']);
 
         return view('admin.rakuten.hotelDetail', $params);
     }
@@ -118,20 +119,29 @@ class RakutenController extends Controller
 
         $cacheKey = __METHOD__ . ' ' . $url;
 
-        if (Cache::has($cacheKey)) {
-            Log::debug(__LINE__ . ' ' . __METHOD__ . ' cache exists');
-        } else {
-            Log::debug(__LINE__ . ' ' . __METHOD__ . ' cache none');
-        }
-
         $cacheExpire = 60 * 60 * 24 * 3;
-        $json = Cache::remember($cacheKey, $cacheExpire, function () use ($url) {
-            $response = Http::get($url);
-            $body = $response->body();
-            return json_decode($body, true);
-        });
 
-        return $json;
+        try {
+
+            if (Cache::has($cacheKey)) {
+                $json = Cache::get($cacheKey);
+            } else {
+                $response = Http::get($url);
+                $status = $response->status();
+
+                if ($status != 200) {
+                    throw new exception('ホテル一覧情報の取得に失敗しました。 (' . $status . ')');
+                }
+                $body = $response->body();
+                $json = json_decode($body, true);
+                Cache::put($cacheKey, $json, $cacheExpire);
+            }
+
+            return $json;
+        } catch(Exception $e) {
+            echo $e->getMessage();
+            exit();
+        }
     }
 
     private function vacantHotel(array $params)
@@ -158,7 +168,6 @@ class RakutenController extends Controller
         });
 
         if (isset($json->hotels)) {
-//            Log::debug(__LINE__);
             foreach ($json->hotels as $hotel) {
                 Log::debug(__LINE__ . ' ' . print_r($hotel->hotel, true));
                 Log::debug(__LINE__
