@@ -40,6 +40,9 @@ Route::middleware('auth')->group(function () {
 
 // 楽天APIを公開ページに設置してみる
 Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
+	Route::any('/', function () {
+		return redirect()->route('rakuten.areas');
+	});
     Route::get('/area', [RakutenController::class, 'getAreas'])->name('areas');
     Route::get('/area/{middle}/{small}', [RakutenController::class, 'getSmall'])->name('area-small');
     Route::get('/area/{middle}/{small}/{detail}', [RakutenController::class, 'getDetail'])->name('area-detail');
