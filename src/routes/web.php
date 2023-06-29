@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Admin\PostController as AdminPostController;
 use App\Http\Controllers\Admin\RakutenController as AdminRakutenController;
+use App\Http\Controllers\RakutenController as RakutenController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Facades\Route;
@@ -35,6 +36,17 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// 楽天APIを公開ページに設置してみる
+Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
+	Route::any('/', function () {
+		return redirect()->route('rakuten.areas');
+	});
+    Route::get('/area', [RakutenController::class, 'getAreas'])->name('areas');
+    Route::get('/area/{middle}/{small}', [RakutenController::class, 'getSmall'])->name('area-small');
+    Route::get('/area/{middle}/{small}/{detail}', [RakutenController::class, 'getDetail'])->name('area-detail');
+    Route::get('/hotel/{hotel}', [RakutenController::class, 'hotelDetail'])->name('hotel-detail');
 });
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
