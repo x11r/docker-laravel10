@@ -129,7 +129,7 @@ class RakutenController extends Controller
 
             // JSONを配列に変換
             $json = json_decode($body, true);
-            
+
             $params = [
                 'hotel' => $json,
             ];
@@ -143,4 +143,9 @@ class RakutenController extends Controller
 
         return view('rakuten.hotelDetail', $params);
     }
+
+	public function vueArea()
+	{
+		return view('rakuten.vue');
+	}
 }

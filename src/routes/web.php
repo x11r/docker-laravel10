@@ -47,6 +47,7 @@ Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
     Route::get('/area/{middle}/{small}', [RakutenController::class, 'getSmall'])->name('area-small');
     Route::get('/area/{middle}/{small}/{detail}', [RakutenController::class, 'getDetail'])->name('area-detail');
     Route::get('/hotel/{hotel}', [RakutenController::class, 'hotelDetail'])->name('hotel-detail');
+	Route::get('/vue', [RakutenController::class, 'vueArea'])->name('vue-area');
 });
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
