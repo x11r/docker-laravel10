@@ -80,10 +80,10 @@ class RakutenController extends Controller
     /**
      * エリアを取得
      *
-     * @param array $params
-     * @return void
+     * @param array $param
+     * @return null
      */
-    public function getHotelMulti(array $params): void
+    public function getHotelMulti(array $params)
     {
         // キャッシュから取得
         $cacheKey = __METHOD__ . ' ' . json_encode($params);
