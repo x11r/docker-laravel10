@@ -9,7 +9,7 @@
         @foreach ($hotels['hotels'] as $hotel)
             <div class="row py-3 border border-gray-100">
                 <div class="h4">
-                    <a href="{{ route('rakuten.hotel-detail', ['hotel' => $hotel['hotel'][0]['hotelBasicInfo']['hotelNo']]) }}">
+                    <a href="{{ route('rakuten.hotel-detail', ['hotelNo' => $hotel['hotel'][0]['hotelBasicInfo']['hotelNo']]) }}">
                         {{ $hotel['hotel'][0]['hotelBasicInfo']['hotelName'] }}
                     </a>
                 </div>

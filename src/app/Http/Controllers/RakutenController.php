@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Services\RakutenApiService;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -26,17 +27,19 @@ class RakutenController extends Controller
         $this->applicationId = config('app.RAKUTEN_APPLICATION_ID');
     }
 
-    public function getAreas()
+    /**
+     * @return View|\Illuminate\Foundation\Application|Factory|Application
+     */
+    public function getAreas(): View|\Illuminate\Foundation\Application|Factory|Application
     {
-        $url = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
-            . 'format=json&applicationId=' . $this->applicationId;
-
         // キャッシュから取得
         $cacheKey = __METHOD__;
 
         $cacheExpire = 60 * 60 * 24 * 3;
-        $json = Cache::remember($cacheKey, $cacheExpire, function() use ($url) {
-            $response = Http::get($url);
+        $json = Cache::remember($cacheKey, $cacheExpire, function() {
+
+            // サービスを利用して取得
+            $response = RakutenApiService::getAreas();
             $body = $response->body();
             $json = json_decode($body, true);
             return $json;
@@ -49,12 +52,26 @@ class RakutenController extends Controller
         return view('rakuten.area', $params);
     }
 
-
+    /**
+     * Smallでホテル一覧を返却する
+     *
+     * @param string $middle
+     * @param string $small
+     * @return null
+     */
     public function getSmall(string $middle, string $small)
     {
         return $this->getHotelMulti(['middle' => $middle, 'small' => $small]);
     }
 
+    /**
+     * Detailでホテル一覧を返す
+     *
+     * @param string $middle
+     * @param string $small
+     * @param string $detail
+     * @return null
+     */
     public function getDetail(string $middle, string $small, string $detail)
     {
         return $this->getHotelMulti(['middle' => $middle, 'small' => $small, 'detail' => $detail]);
@@ -63,46 +80,41 @@ class RakutenController extends Controller
     /**
      * エリアを取得
      *
-     * @param string $large
-     * @param string $middle
-     * @param string $small
-     * @param string $detail
+     * @param array $params
      * @return void
      */
-    public function getHotelMulti(array $params)
+    public function getHotelMulti(array $params): void
     {
-        $url = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426?'
-            . 'format=json'
-            . '&applicationId=' . $this->applicationId;
-
-        $url .= '&largeClassCode=japan';
-
-        if (isset($params['middle'])) {
-            $url .= '&middleClassCode=' . $params['middle'];
-        }
-
-        if (isset($params['small'])) {
-            $url .= '&smallClassCode=' . $params['small'];
-        }
-
-        if (isset($params['detail'])) {
-            $url .= '&detailClassCode=' . $params['detail'];
-        }
-
         // キャッシュから取得
-        $cacheKey = __METHOD__ . ' ' . $url;
+        $cacheKey = __METHOD__ . ' ' . json_encode($params);
 
         $cacheExpire = 60 * 60 * 24 * 3;
-        $json = Cache::remember($cacheKey, $cacheExpire, function() use ($url) {
-            $response = Http::get($url);
-            $body = $response->body();
-            $json = json_decode($body, true);
-            return $json;
-        });
 
-        $params = [
-            'hotels' => $json,
-        ];
+        try {
+
+            if (Cache::has($cacheKey)) {
+                Log::debug(__LINE__ . ' ' . __METHOD__. ' use cache ');
+                $json = Cache::get($cacheKey);
+            } else {
+                $json = Cache::remember($cacheKey, $cacheExpire, function () use ($params) {
+
+                    $response = RakutenApiService::getArea($params);
+                    $body = $response->body();
+                    $json = json_decode($body, true);
+                    return $json;
+                });
+
+                Cache::put($cacheKey, $json, $cacheExpire);
+            }
+
+            $params = [
+                'hotels' => $json,
+            ];
+
+
+        } catch (Exception $e) {
+
+        }
 
         return view('rakuten.hotels', $params);
     }
@@ -111,27 +123,37 @@ class RakutenController extends Controller
      * @param string $hotel
      * @return Application|Factory|View|\Illuminate\Foundation\Application
      */
-    public function hotelDetail(string $hotel)
+    public function hotelDetail(int $hotelNo)
     {
-        $url = 'https://app.rakuten.co.jp/services/api/Travel/VacantHotelSearch/20170426?format=json'
-            . '&applicationId=' . $this->applicationId
-            . '&hotelNo=' . $hotel;
 
+        $cacheKey = __METHOD__ . ' ' . $hotelNo;
+        $cacheExpire = 60 * 60 * 24 * 1;
         try {
 
-            $response = Http::get($url);
-            $body = $response->body();
-            $status = $response->status();
+            if (Cache::has($cacheKey)) {
+                $json = Cache::get($cacheKey);
+                Log::debug(__LINE__ . ' ' . __METHOD__ . ' use cache');
 
-            if ($status != 200) {
-                throw new Exception('情報取得できませんでした。');
+            } else {
+
+                $response = RakutenApiService::getHotel((int)$hotelNo);
+                $body = $response->body();
+                $status = $response->status();
+
+                if ($status != 200) {
+                    throw new Exception('情報取得できませんでした。');
+                }
+
+                Log::debug(__LINE__ . ' ' . __METHOD__ . ' no cache requesting');
+
+                // JSONを配列に変換
+                $json = json_decode($body);
+
+                Cache::put($cacheKey, $json, $cacheExpire);
             }
 
-            // JSONを配列に変換
-            $json = json_decode($body, true);
-            
             $params = [
-                'hotel' => $json,
+                'hotels' => $json->hotels,
             ];
 
         } catch (Exception $e) {
