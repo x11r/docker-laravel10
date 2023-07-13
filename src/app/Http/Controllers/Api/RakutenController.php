@@ -3,8 +3,13 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
+use App\Services\RakutenApiService;
 use Exception;
+use Illuminate\Contracts\Foundation\Application;
+use Illuminate\Contracts\Routing\ResponseFactory;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
@@ -13,33 +18,39 @@ class RakutenController extends Controller
 {
 
 	protected string $applicationId;
+
+	/**
+	 * @param Request $request
+	 */
 	public function __construct(Request $request)
 	{
 		$this->applicationId = config('app.RAKUTEN_APPLICATION_ID');
 		$this->request = $request;
     }
 
-	public function getAreas()
+	/**
+	 * @return Application|ResponseFactory|\Illuminate\Foundation\Application|JsonResponse|Response
+	 */
+	public function getAreas(): \Illuminate\Foundation\Application|Response|JsonResponse|Application|ResponseFactory
 	{
-		$url = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
-			. 'format=json&applicationId=' . $this->applicationId;
-
-		Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $url);
-
-		// キャッシュから取得
+		// キャッシュ設定
 		$cacheKey = __METHOD__;
-
 		$cacheExpire = 60 * 60 * 24 * 3;
+
 		try {
 			if (Cache::has($cacheKey)) {
+                // キャッシュで取得できたら利用する
 				$json = Cache::get($cacheKey);
 				Log::debug(__LINE__ . ' ' . __METHOD__ . ' [cache]');
 
 			} else {
-				$response = Http::get($url);
+                // キャッシュがない場合は、APIで取得する
+				$response = RakutenApiService::getAreas();
+
 				$status = $response->status();
 
 				Log::debug(__LINE__ . ' ' . __METHOD__ . ' [request]');
+
 				if ($status != 200) {
 					throw new Exception('情報取得できませんでした。(' . $status . ')');
 				}
