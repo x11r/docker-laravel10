@@ -23,7 +23,6 @@ class RakutenController extends Controller
 
     public function __construct()
     {
-
         $this->applicationId = config('app.RAKUTEN_APPLICATION_ID');
     }
 
