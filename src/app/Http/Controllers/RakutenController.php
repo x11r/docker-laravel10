@@ -31,24 +31,19 @@ class RakutenController extends Controller
      */
     public function getAreas(): View|\Illuminate\Foundation\Application|Factory|Application
     {
-        // キャッシュから取得
-        $cacheKey = __METHOD__;
+        try {
 
-        $cacheExpire = 60 * 60 * 24 * 3;
-        $json = Cache::remember($cacheKey, $cacheExpire, function() {
+            $json = RakutenApiService::getAreasJson();
 
-            // サービスを利用して取得
-            $response = RakutenApiService::getAreas();
-            $body = $response->body();
-            $json = json_decode($body, true);
-            return $json;
-        });
+            $params = [
+                'areas' => $json,
+            ];
 
-        $params = [
-            'areas' => $json,
-        ];
+            return view('rakuten.area', $params);
+        } catch (Exception $e) {
 
-        return view('rakuten.area', $params);
+            return view('errors.404');
+        }
     }
 
     /**
