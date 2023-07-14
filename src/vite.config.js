@@ -7,7 +7,7 @@ export default defineConfig({
         laravel({
             input: ['resources/js/app.js',
                 'resources/scss/app.sass',
-                'resources/scss/rakuten.js'
+                'resources/js/rakuten.js'
             ],
             refresh: true,
         }),
