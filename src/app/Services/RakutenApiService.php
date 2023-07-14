@@ -4,11 +4,44 @@ declare(strict_types=1);
 
 namespace App\Services;
 
+use Exception;
 use Illuminate\Http\Client\Response;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
 class RakutenApiService
 {
+
+    /**
+     * 取得したエリアをキャッシュを利用する
+     * @return mixed
+     */
+    public static function getAreasJson(): mixed
+    {
+
+        $cacheExpire = 60 * 60 * 24 * 3;
+        $cacheKey = __METHOD__;
+
+        if (Cache::has($cacheKey)) {
+            $body = Cache::get($cacheKey);
+        } else {
+            $response = self::getAreas();
+
+            $status = $response->status();
+
+            if ($status !== 200) {
+                return throw new exception('error (' . $status . ')');
+            }
+
+            $body = $response->body();
+
+            Cache::put($cacheKey . $body, $cacheExpire);
+        }
+
+        $json = json_decode($body);
+
+        return $json;
+    }
 
 	/**
 	 * 楽天APIのエリア情報を取得する
