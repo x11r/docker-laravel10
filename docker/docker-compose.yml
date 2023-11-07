@@ -5,13 +5,15 @@ services:
     volumes:
       - ./nginx/template:/etc/nginx/template
       - ../src:/var/www
+#       - ../../study-nuxt3/nuxt3-app/.output/public:/var/nuxt
     command: /bin/sh -c "DOLLAR=$$ envsubst < /etc/nginx/template/default.conf > /etc/nginx/conf.d/default.conf; nginx -g 'daemon off;' "
     environment:
       TZ: Asia/Tokyo
       SERVER_APP_NAME: app
       SERVER_APP_PORT: ${SERVER_APP_PORT}
+      SERVER_WEB_PORT: ${SERVER_WEB_PORT}
     ports:
-      - "${SERVER_WEB_PORT}:80"
+      - "${SERVER_WEB_PORT}:${SERVER_WEB_PORT}"
     depends_on:
       - app
   app:

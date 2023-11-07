@@ -33,7 +33,7 @@
                                         <ul class="row my-2 pr-5">
                                             @foreach ($small->smallClass[1]->detailClasses as $detail)
                                                 <li class="col-md ml-1 text-nowrap">
-                                                    <a href="{{ route('rakuten.area-detail', [
+                                                    <a href="{{ route('app.rakuten.area-detail', [
                                                         'middle' => $middle->middleClass[0]->middleClassCode,
                                                         'small' => $small->smallClass[0]->smallClassCode,
                                                         'detail' => $detail->detailClass->detailClassCode]) }}"
@@ -47,7 +47,7 @@
                                 </li>
                             @else
                                 <li class="bg-gray-50 col text-nowrap">
-                                    <a href="{{ route('rakuten.area-small', [
+                                    <a href="{{ route('app.rakuten.area-small', [
                                         'middle' => $middle->middleClass[0]->middleClassCode,
                                         'small' => $small->smallClass[0]->smallClassCode
                                     ]) }}">

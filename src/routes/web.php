@@ -39,9 +39,9 @@ Route::middleware('auth')->group(function () {
 });
 
 // 楽天APIを公開ページに設置してみる
-Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
+Route::group(['prefix' => 'app/rakuten', 'as' => 'app.rakuten.'], function () {
 	Route::any('/', function () {
-		return redirect()->route('rakuten.areas');
+		return redirect()->route('app.rakuten.areas');
 	});
     Route::get('/area', [RakutenController::class, 'getAreas'])->name('areas');
     Route::get('/area/{middle}/{small}', [RakutenController::class, 'getSmall'])->name('area-small');
@@ -49,19 +49,19 @@ Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
     Route::get('/hotel/{hotelNo}', [RakutenController::class, 'hotelDetail'])->name('hotel-detail');
 });
 
-Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
-    Route::resources([
-        'posts' => AdminPostController::class
-    ]);
-
-    Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
-        Route::get('/', [AdminRakutenController::class,'index'])->name('index');
-        Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaMulti'])->name('area-small');
-        Route::get('/area/{middle}/{small}/{detail}', [AdminRakutenController::class, 'areaMulti'])
-            ->name('area-multi');
-        Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
-        Route::get('/hotelRanking', [AdminRakutenController::class, 'hotelRanking'])->name('hotel-ranking');
-    });
-});
+//Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
+//    Route::resources([
+//        'posts' => AdminPostController::class
+//    ]);
+//
+//    Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
+//        Route::get('/', [AdminRakutenController::class,'index'])->name('index');
+//        Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaMulti'])->name('area-small');
+//        Route::get('/area/{middle}/{small}/{detail}', [AdminRakutenController::class, 'areaMulti'])
+//            ->name('area-multi');
+//        Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
+//        Route::get('/hotelRanking', [AdminRakutenController::class, 'hotelRanking'])->name('hotel-ranking');
+//    });
+//});
 
 require __DIR__.'/auth.php';
