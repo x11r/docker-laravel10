@@ -10,7 +10,8 @@ cache:
 	docker-compose exec app php artisan cache:clear
 	docker-compose exec app php artisan config:clear
 migrate:
-	docker-compose exec app /usr/local/bin/php artisan migrate
+	docker-compose exec app php artisan migrate
+	#docker-compose exec app /usr/local/bin/php artisan migrate
 restart:
 	docker-compose stop
 	docker-compose up -d
