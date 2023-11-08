@@ -9,8 +9,14 @@ cache:
 	docker-compose exec app php artisan view:clear
 	docker-compose exec app php artisan cache:clear
 	docker-compose exec app php artisan config:clear
+install:
+	docker-compose exec app composer install
 migrate:
-	docker-compose exec app /usr/local/bin/php artisan migrate
+	docker-compose exec app php artisan migrate
+rebuild:
+	docker-compose stop
+	docker-compose build --no-cache
+	docker-compose up -d
 restart:
 	docker-compose stop
 	docker-compose up -d

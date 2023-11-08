@@ -1,6 +1,5 @@
 <?php
 
-use App\Http\Controllers\Api\RakutenController as ApiRakutenController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 
@@ -22,4 +21,5 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::group(['prefix' => 'rakuten'], function () {
 	Route::get('areas', [ApiRakutenController::class, 'getAreas']);
 	Route::get('hotels', [ApiRakutenController::class, 'getHotels']);
+	Route::get('hotel/{hotel}', [ApiRakutenController::class, 'getHotel']);
 });
