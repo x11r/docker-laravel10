@@ -5,7 +5,7 @@
 @section('content')
     <div class="container">
         <div class="h1 bg-red-50 p-2">
-            <a href="{{ route('rakuten.areas')  }}">楽天トラベルAPI</a> 地域別ホテル一覧
+            <a href="{{ route('app.rakuten.areas')  }}">楽天トラベルAPI</a> 地域別ホテル一覧
         </div>
         @foreach ($hotels['hotels'] as $hotel)
             @php
@@ -17,7 +17,7 @@
                 <div class="row m-1 p-2 bg-white">
                     <div class="col">
                         <div class="h4">
-                            <a href="{{ route('rakuten.hotel-detail', ['hotelNo' => $hotelBasicInfo['hotelNo']]) }}">
+                            <a href="{{ route('app.rakuten.hotel-detail', ['hotelNo' => $hotelBasicInfo['hotelNo']]) }}">
                                 {{ $hotelBasicInfo['hotelName'] }}
                             </a>
                         </div>
