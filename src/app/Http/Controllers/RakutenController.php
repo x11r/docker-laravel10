@@ -4,7 +4,6 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
-use App\Services\RakutenApiService;
 use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
@@ -159,4 +158,9 @@ class RakutenController extends Controller
 
         return view('rakuten.hotelDetail', $params);
     }
+
+	public function vueArea()
+	{
+		return view('rakuten.vue');
+	}
 }

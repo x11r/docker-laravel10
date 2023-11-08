@@ -47,21 +47,22 @@ Route::group(['prefix' => 'app/rakuten', 'as' => 'app.rakuten.'], function () {
     Route::get('/area/{middle}/{small}', [RakutenController::class, 'getSmall'])->name('area-small');
     Route::get('/area/{middle}/{small}/{detail}', [RakutenController::class, 'getDetail'])->name('area-detail');
     Route::get('/hotel/{hotelNo}', [RakutenController::class, 'hotelDetail'])->name('hotel-detail');
+    Route::get('/vue', [RakutenController::class, 'vueArea'])->name('vue-area');
 });
 
-//Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
-//    Route::resources([
-//        'posts' => AdminPostController::class
-//    ]);
-//
-//    Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
-//        Route::get('/', [AdminRakutenController::class,'index'])->name('index');
-//        Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaMulti'])->name('area-small');
-//        Route::get('/area/{middle}/{small}/{detail}', [AdminRakutenController::class, 'areaMulti'])
-//            ->name('area-multi');
-//        Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
-//        Route::get('/hotelRanking', [AdminRakutenController::class, 'hotelRanking'])->name('hotel-ranking');
-//    });
-//});
+Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
+    Route::resources([
+        'posts' => AdminPostController::class
+    ]);
+
+    Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
+        Route::get('/', [AdminRakutenController::class,'index'])->name('index');
+        Route::get('/area/{middle}/{small}', [AdminRakutenController::class, 'areaMulti'])->name('area-small');
+        Route::get('/area/{middle}/{small}/{detail}', [AdminRakutenController::class, 'areaMulti'])
+            ->name('area-multi');
+        Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
+        Route::get('/hotelRanking', [AdminRakutenController::class, 'hotelRanking'])->name('hotel-ranking');
+    });
+});
 
 require __DIR__.'/auth.php';
