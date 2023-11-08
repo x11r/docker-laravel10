@@ -5,7 +5,7 @@
 @section('content')
     <div class="container">
         <div class="h1 bg-red-100 p-2">
-            <a href="{{ route('rakuten.areas') }}">楽天トラベルAPI</a> ホテル詳細
+            <a href="{{ route('app.rakuten.areas') }}">楽天トラベルAPI</a> ホテル詳細
         </div>
         <div class="h2">{{ $hotels[0]->hotel[0]->hotelBasicInfo->hotelName }}</div>
         <div class="bg-red-100 m-1">
