@@ -44,6 +44,12 @@ services:
 #      - ./mariadb/mysql.cnf:/etc/mysql/my.cnf
     ports:
       - "${MYSQL_TCP_PORT}:${MYSQL_TCP_PORT}"
+  chronium:
+    image: selenium/standalone-chrome-debug:3.141
+    ports:
+      - 4444:4444
+      - 5901:5900
+      - 7900:7900
 
 volumes:
   mariadb-lara10:
