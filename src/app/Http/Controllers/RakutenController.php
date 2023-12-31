@@ -9,10 +9,7 @@ use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Bootstrap\HandleExceptions;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RakutenController extends Controller
@@ -159,4 +156,9 @@ class RakutenController extends Controller
 
         return view('rakuten.hotelDetail', $params);
     }
+
+	public function vueArea()
+	{
+		return view('rakuten.vue');
+	}
 }

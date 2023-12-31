@@ -16,7 +16,7 @@ import:
 install:
 	docker-compose exec app composer install
 migrate:
-	docker-compose exec app /usr/local/bin/php artisan migrate
+	docker-compose exec app php artisan migrate
 rebuild:
 	docker-compose stop
 	docker-compose build --no-cache
