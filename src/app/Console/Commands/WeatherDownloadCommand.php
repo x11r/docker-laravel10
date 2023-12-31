@@ -2,19 +2,18 @@
 
 namespace App\Console\Commands;
 
-use App\Services\WeatherImportService;
 use App\Services\WeatherService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 
-class WeatherImportCommand extends Command
+class WeatherDownloadCommand extends Command
 {
     /**
      * The name and signature of the console command.
      *
      * @var string
      */
-    protected $signature = 'app:weather-import';
+    protected $signature = 'app:weather-download';
 
     /**
      * The console command description.
@@ -28,7 +27,7 @@ class WeatherImportCommand extends Command
      */
     public function handle()
     {
-		WeatherImportService::ImportCsv();
+		WeatherService::downloadWeatherCsv();
     }
 
 }
