@@ -53,9 +53,9 @@ services:
     environment:
       TZ: Asia/Tokyo
     ports:
-      - 4444:4444
-      - 5901:5900
-      - 7900:7900
+      - "4444:4444"
+      - "5901:5900"
+      - "7900:7900"
 
 volumes:
   mariadb-lara10:
