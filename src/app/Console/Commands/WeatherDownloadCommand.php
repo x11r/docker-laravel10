@@ -13,21 +13,26 @@ class WeatherDownloadCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:weather-download';
+    protected $signature = 'app:weather-download {start} {end}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'download weather data and import ';
+    protected $description = 'download weather data and import {start : start} {end: end}';
 
     /**
      * Execute the console command.
      */
     public function handle()
     {
-		WeatherService::downloadWeatherCsv();
-    }
 
+	    $start = $this->argument('start');
+	    $end = $this->argument('end');
+		Log::debug(__LINE__ . ' ' . __METHOD__ . ' [start] ' );
+
+//		WeatherService::importDaily();
+		WeatherService::downloadWeatherCsv($start, $end);
+    }
 }

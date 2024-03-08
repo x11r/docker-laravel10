@@ -23,46 +23,98 @@ class WeatherService
 {
 
 	// SeleniumのURL
-	const BASE_URL = 'http://localhost:4444/wd/hub';
+	const BASE_URL = 'http://chronium:4444/wd/hub';
 
 	// ダウンロードURL
 	const DOWNLOAD_URL = 'https://www.data.jma.go.jp/gmd/risk/obsdl/index.php';
 
 	// 都道府県
-	private static int $prefectureSelect = 44;
+	private static ?int $prefectureSelect = null;
 
 	// 地点
-	private static array $stationSelects = ['東京', '八王子'];
+	private static array $stationSelects = [];
 
-	// 選択年
-	private static int $year = 1885;
+	// ブラウザーのダウンロードリトライ上限回数
+	private static int $browserDownloadRetryLimit = 3;
+
+	// ブラウザーのダウンロードリトライ回数
+	private static int $browserDownloadRetry = 0;
+
+	private static ?string $dateStart = null;
+	private static ?string $dateEnd = null;
+
+	private static array $prefectures = [
+		[
+			'prefecture_id' => 44,
+			'station' => ['東京', '八王子']
+		],
+		[
+			'prefecture_id' => 82,
+			'station' => ['福岡']
+		],
+		[
+			'prefecture_id' => 85,
+			'station' => ['唐津', '佐賀']
+		],
+	];
+
+	/**
+	 * 毎日のバッチ用
+	 * @return void
+	 */
+	public static function importDaily()
+	{
+		// ダウンロード
+		// 地区一覧
+		$prefectures = self::$prefectures;
+		foreach ($prefectures as $prefecture) {
+
+			$dateStart = (new Carbon)->addDays(-30);
+			self::$yearEnd = (int)$dateStart->format('Y');
+			self::$monthEnd = (int)$dateStart->format('m');
+			self::$dayEnd = (int)$dateStart->format('d');
+
+			$dateEnd = (new Carbon)->addDays(-1);
+			self::$yearEnd = (int)$dateEnd->format('Y');
+			self::$monthEnd = (int)$dateEnd->format('m');
+			self::$dayEnd = (int)$dateEnd->format('d');
+
+			echo __LINE__ . ' [start] ' . $dateStart->format('Y-m-d')
+				. ' [end]' . $dateEnd->format('Y-m-d')
+				. PHP_EOL;
+
+			// 都道府県
+			self::$prefectureSelect = $prefecture['prefecture_id'];
+
+			// 地点
+			self::$stationSelects = $prefecture['station'];
+
+//			self::downloadByBrowser();
+
+		}
+
+		Log::debug(__LINE__ . ' ' . __METHOD__ . ' [start import]');
+		// インポート
+		self::importCsv();
+	}
 
 	/**
 	 * 気象庁からCSVをダウンロードしてDBに入れる
 	 *
+	 * @param null $year
 	 * @return void
 	 */
-	public static function downloadWeatherCsv(): void
+	public static function downloadWeatherCsv($start = null, $end = null): void
 	{
-		$prefectures = [
-			[
-				'prefecture_id' => 44,
-				'station' => ['東京', '八王子']
-			],
-			[
-				'prefecture_id' => 82,
-				'station' => ['福岡']
-			],
-			[
-				'prefecture_id' => 85,
-				'station' => ['唐津', '佐賀']
-			],
-		];
+		$prefectures = self::$prefectures;
 
 		foreach ($prefectures as $prefecture) {
 
-			$yearTarget = self::$year;
-			$yearCurrent = (new Carbon)->format('Y');
+			// 取得開始
+			$yearTarget = $start ?? date('Y');
+
+			// 取得年
+			$yearCurrent = $end ?? date('Y');
 
 			self::$prefectureSelect = $prefecture['prefecture_id'];
 			self::$stationSelects = $prefecture['station'];
@@ -74,10 +126,9 @@ class WeatherService
 					. ' [station] ' . print_r(self::$stationSelects, true)
 					. ' [year] ' . $yearTarget
 				);
-				self::$year = $yearTarget;
 
 				// ダウンロード
-				self::downloadByBrowser();
+				self::downloadByBrowser($yearTarget);
 
 				$yearTarget++;
 				sleep(3);
@@ -85,10 +136,8 @@ class WeatherService
 		}
 	}
 
-	public static function downloadByBrowser()
+	public static function downloadByBrowser($year = null)
 	{
-		// 東京のCSVをダウンロードする
-
 		$baseUrl = self::BASE_URL;
 		$downloadUrl = self::DOWNLOAD_URL;
 
@@ -98,7 +147,7 @@ class WeatherService
 		// ダウンロードディレクトリ
 		$downloadDir = $shareDir
 			. DIRECTORY_SEPARATOR . self::$prefectureSelect
-			. DIRECTORY_SEPARATOR . self::$year;
+			. DIRECTORY_SEPARATOR . $year;
 
 		Log::debug(__LINE__ . ' [download dir]' . $downloadDir);
 
@@ -121,10 +170,36 @@ class WeatherService
 			'download.default_directory' => $downloadDir,
 		]);
 
-		$dimension = new WebDriverDimension(1600, 1400);
+		$dimension = new WebDriverDimension(1920, 1080);
 		$capabilities = DesiredCapabilities::chrome();
 		$capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
 		$driver = RemoteWebDriver::create($baseUrl, $capabilities);
+
+		// 年の指定が会った場合
+
+		// 開始年月日
+		$yearStart = $year ?? date('Y');
+		$monthStart = 1;
+		$dayStart = 1;
+
+		// 最終の年月日の設定
+		if ($year == date('Y')) {
+			// 今年を取得するときは、前日分の情報しか取得できない対応
+			$dateEndObj = new Carbon(date('Y-m-d'));
+			$yearEnd = (int)$dateEndObj->format('Y');
+			$monthEnd = (int)$dateEndObj->format('m');
+			$dayEnd = (int)$dateEndObj->addDay(-1)->format('d');
+		} else {
+			$yearEnd = $year;
+			$monthEnd = 12;
+			$dayEnd = 31;
+		}
+
+		Log::debug(__LINE__ . ' ' . __METHOD__
+			. ' [year] ' . $year
+			. ' [start] ' . $yearStart . ' ' . $monthStart . ' ' . $dayStart
+			. ' [end] ' . $yearEnd . ' ' . $monthEnd . ' ' . $dayEnd
+		);
 
 		try {
 			$driver->manage()->window()->setSize($dimension);
@@ -192,40 +267,64 @@ class WeatherService
 			// 開始月
 			$startMonth = $driver->findElements(WebDriverBy::name('inim'));
 			$select = new WebDriverSelect($startMonth[1]);
-			$select->selectByValue('1');
+			$select->selectByValue($monthStart);
 
-			// //*[@id="selectPeriod"]/div/div[2]/div[2]/div[1]/select[2]
 			// 開始日
 			$startDay = $driver->findElements(WebDriverBy::name('inid'));
 			$select = new WebDriverSelect($startDay[1]);
-			$select->selectByValue('1');
+			$select->selectByValue($dayStart);
 
 			// 最終月
 			$endMonth = $driver->findElements(WebDriverBy::name('endm'));
 			$select = new WebDriverSelect($endMonth[1]);
-			$select->selectByValue('12');
+			$select->selectByValue($monthEnd);
 
 			// 最終日
 			$endDay = $driver->findElements(WebDriverBy::name('endd'));
 			$select = new WebDriverSelect($endDay[1]);
-			$select->selectByValue('31');
+			$select->selectByValue($dayEnd);
 
 			// 開始年
 			$startYear = $driver->findElements(WebDriverBy::name('iniy'));
 			$select = new WebDriverSelect($startYear[1]);
-			$select->selectByValue(self::$year);
+			$select->selectByValue($yearStart);
 
 			// 最終年（開始年と同じで良い）
 			$startYear = $driver->findElements(WebDriverBy::name('iniy'));
 			$select = new WebDriverSelect($startYear[1]);
-			$select->selectByValue(self::$year);
+			$select->selectByValue($yearEnd);
 
 			// ローカルストレージの確認
-			$localStorage = $driver->executeScript('return localStorage.getItem(\'obsdl_stationList\');');
+			$driver->executeScript('return localStorage.getItem(\'obsdl_stationList\');');
 
 			// ダウンロードボタン
 			$driver->findElement(WebDriverBy::id('csvdl'))->click();
 			$driver->wait(5, 10);
+
+			$body = $driver->findElement(WebDriverBy::tagName('body'))->getText();
+
+			$searchString = 'ただいまアクセスが集中しています。';
+			if (mb_strstr($searchString, $body)) {
+
+				// ブラウザーでダウンロードの再開回数
+				self::$browserDownloadRetry++;
+
+				if (self::$browserDownloadRetry <= self::$browserDownloadRetryLimit) {
+
+					// だめっぽいときは再度ダウンロードしてみる
+					$driver->quit();
+
+					sleep(3);
+					Log::info(__LINE__ . ' ' . __METHOD__ . ' [retry] ' . self::$browserDownloadRetry);
+					self::downloadByBrowser($year);
+					return null;
+				} else {
+					// 制限回数を超えたら終了する
+					Log::info(__LINE__ . ' '. __METHOD__ . ' [download failure]');
+					return null;
+				}
+			}
+
 			sleep(3);
 
 			$driver->quit();
@@ -251,8 +350,8 @@ class WeatherService
 	{
 		$csvDir = config('app.CHROMIUM_DOWNLOAD_DIR');
 
-		// スキップするディレクト一覧のオブジェクト
-		$notDir = ['.', '..', '.DS_Store'];
+		// スキップするディレクトリ一覧のオブジェクト
+		$notDir = ['.', '..', '.DS_Store', '.gitignore'];
 
 		if ($handle = opendir($csvDir)) {
 			while (false !== ($prefectureId = readdir($handle))) {
@@ -342,12 +441,54 @@ class WeatherService
 						);
 					}
 				}
-				if ($n > 100) {
+				if ($n > 1000) {
+					Log::debug(__LINE__ . ' ' . __METHOD__);
 					break;
 				}
 
 				$n++;
 			}
 		}
+	}
+
+	public static function getWeathers(array $params)
+	{
+		$prefecture_id = $params['prefecture_id'];
+
+		$results = [];
+
+		$weathers = WeatherDaily::where('prefecture_id', $prefecture_id)
+			->where('station_name', $params['station'])
+			->whereBetween('date', [$params['dateStart'], $params['dateEnd']])
+			->orderBy('date')
+			->get();
+
+		// 日付をキーに変換
+		$weatherByDates = [];
+		foreach ($weathers as $weather) {
+			$weatherByDates[$weather['date']] = $weather;
+		}
+
+		$format = 'Y-m-d';
+		$date = new Carbon($params['dateStart']);
+		$dateCurrent = $date->format($format);
+		$dateEnd = max(array_keys($weatherByDates));
+
+		// 日付範囲を全て返す
+		while ($dateCurrent <= $dateEnd) {
+
+			$dateCurrent = $date->addDays(1)->format($format);
+
+			$results[] = $weatherByDates[$dateCurrent] ?? [];
+
+//			$memoryUsage = memory_get_usage();
+//
+//			if ($n % 100 === 1) {
+//				Log::debug(__LINE__. ' [memory usage]' . $memoryUsage);
+//			}
+//			$n++;
+		}
+
+		return $results;
 	}
 }

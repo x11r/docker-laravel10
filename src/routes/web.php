@@ -65,4 +65,11 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
     });
 });
 
+// 天気
+Route::group(['prefix' => 'app/weather/vue', 'as' => 'app.weather.vue'], function () {
+	Route::any('/', function () {
+		return view('weather.vue');
+	});
+});
+
 require __DIR__.'/auth.php';
