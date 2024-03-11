@@ -64,6 +64,7 @@ class WeatherService
 	 */
 	public static function importDaily()
 	{
+		Log::info(__METHOD__ . ' [start]');
 		// ダウンロード
 		// 地区一覧
 		$prefectures = self::$prefectures;
@@ -348,6 +349,7 @@ class WeatherService
 
 	public static function ImportCsv()
 	{
+		Log::info(__METHOD__ . ' [start]');
 		$csvDir = config('app.CHROMIUM_DOWNLOAD_DIR');
 
 		// スキップするディレクトリ一覧のオブジェクト
@@ -380,6 +382,7 @@ class WeatherService
 	public static function importWeatherData($filePath, int $prefectureId)
 	{
 
+		Log::info(__METHOD__ . ' [filePath] ' . $filePath);
 		if (($handle = fopen($filePath, 'r')) !== false) {
 
 			$stationNames = [];
@@ -408,7 +411,7 @@ class WeatherService
 							'prefecture_id' => $prefectureId,
 							'station_name' =>  $stationNames[0],
 							'temperature_highest' => $decoded[1],
-							'temperature_lowest' => $decoded[4],
+							'temperature_lowest' => $decoded[3],
 						];
 					}
 
@@ -422,7 +425,7 @@ class WeatherService
 							'prefecture_id' => $prefectureId,
 							'station_name' =>  $stationNames[1],
 							'temperature_highest' => $decoded[7],
-							'temperature_lowest' => $decoded[11],
+							'temperature_lowest' => $decoded[10],
 						];
 					}
 
@@ -472,21 +475,24 @@ class WeatherService
 		$format = 'Y-m-d';
 		$date = new Carbon($params['dateStart']);
 		$dateCurrent = $date->format($format);
-		$dateEnd = max(array_keys($weatherByDates));
+		if (count($weatherByDates) > 1) {
+			$dateEnd = max(array_keys($weatherByDates));
 
-		// 日付範囲を全て返す
-		while ($dateCurrent <= $dateEnd) {
+			$n = 0;
+			// 日付範囲を全て返す
+			while ($dateCurrent <= $dateEnd) {
 
-			$dateCurrent = $date->addDays(1)->format($format);
+				$dateCurrent = $date->addDays(1)->format($format);
 
-			$results[] = $weatherByDates[$dateCurrent] ?? [];
+				$results[] = $weatherByDates[$dateCurrent] ?? ['date' => $dateCurrent];
 
-//			$memoryUsage = memory_get_usage();
-//
-//			if ($n % 100 === 1) {
-//				Log::debug(__LINE__. ' [memory usage]' . $memoryUsage);
-//			}
-//			$n++;
+				$memoryUsage = memory_get_usage();
+
+				if ($n % 100 === 1) {
+					Log::debug(__LINE__. ' [memory usage]' . number_format($memoryUsage));
+				}
+				$n++;
+			}
 		}
 
 		return $results;
