@@ -105,17 +105,27 @@ class WeatherService
 	 * @param null $year
 	 * @return void
 	 */
-	public static function downloadWeatherCsv($start = null, $end = null): void
+	public static function downloadWeatherCsv($prefectureId = null, $start = null, $end = null): void
 	{
+		Log::info(__METHOD__ . ' [START] [prefecture id] ' . $prefectureId
+			. ' [start] ' . $start
+			. ' [end] ' . $end
+		);
+
 		$prefectures = self::$prefectures;
 
 		foreach ($prefectures as $prefecture) {
 
+			if ($prefectureId && $prefectureId != $prefecture['prefecture_id']) {
+
+				continue;
+			}
+
 			// 取得開始
 			$yearTarget = $start ?? date('Y');
 
-			// 取得年
-			$yearCurrent = $end ?? date('Y');
+			// 取得年の最終がない場合は1年だけ取得する
+			$yearCurrent = $end ?? $start;
 
 			self::$prefectureSelect = $prefecture['prefecture_id'];
 			self::$stationSelects = $prefecture['station'];
@@ -135,6 +145,8 @@ class WeatherService
 				sleep(3);
 			}
 		}
+
+		Log::info(__METHOD__ . ' [END]');
 	}
 
 	public static function downloadByBrowser($year = null)
@@ -306,6 +318,7 @@ class WeatherService
 
 			$searchString = 'ただいまアクセスが集中しています。';
 			if (mb_strstr($searchString, $body)) {
+				// 時間をおいても、ダウンロードのエラーか動作しないとき
 
 				// ブラウザーでダウンロードの再開回数
 				self::$browserDownloadRetry++;
