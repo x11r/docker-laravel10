@@ -9,6 +9,10 @@ cache:
 	docker-compose exec app php artisan view:clear
 	docker-compose exec app php artisan cache:clear
 	docker-compose exec app php artisan config:clear
+download:
+	docker-compose exec app php artisan app:weather-download
+import:
+	docker-compose exec app php artisan app:weather-import
 install:
 	docker-compose exec app composer install
 migrate:

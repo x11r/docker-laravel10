@@ -28,6 +28,8 @@ services:
     working_dir: /var/www
     environment:
       TZ: Asia/Tokyo
+      PHP_DEBUG_CONFIG: ${PHP_DEBUG_CONFIG}
+      PHP_IDE_CONFIG: ${PHP_DEBUG_CONFIG}
     depends_on:
       - db
   db:
@@ -44,6 +46,16 @@ services:
 #      - ./mariadb/mysql.cnf:/etc/mysql/my.cnf
     ports:
       - "${MYSQL_TCP_PORT}:${MYSQL_TCP_PORT}"
+  chronium:
+    build: ./chromium
+    volumes:
+      - ./share:/share
+    environment:
+      TZ: Asia/Tokyo
+    ports:
+      - "4444:4444"
+      - "5901:5900"
+      - "7900:7900"
 
 volumes:
   mariadb-lara10:
