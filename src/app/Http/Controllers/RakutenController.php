@@ -28,19 +28,13 @@ class RakutenController extends Controller
      */
     public function getAreas(): View|\Illuminate\Foundation\Application|Factory|Application
     {
-        try {
+        $json = RakutenApiService::getAreasJson();
 
-            $json = RakutenApiService::getAreasJson();
+        $params = [
+            'areas' => $json,
+        ];
 
-            $params = [
-                'areas' => $json,
-            ];
-
-            return view('rakuten.area', $params);
-        } catch (Exception $e) {
-
-            return view('errors.404');
-        }
+        return view('rakuten.area', $params);
     }
 
     /**

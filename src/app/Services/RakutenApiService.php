@@ -8,6 +8,7 @@ use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 
 class RakutenApiService
 {
@@ -34,8 +35,11 @@ class RakutenApiService
             }
 
             $body = $response->body();
+//            Log::debug(__LINE__ . ' '. __METHOD__
+//                . ' [key] ' . $cacheKey
+//            );
 
-            Cache::put($cacheKey . $body, $cacheExpire);
+//            Cache::put($cacheKey . $body, $cacheExpire);
         }
 
         $json = json_decode($body);
