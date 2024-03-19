@@ -424,7 +424,7 @@ class WeatherService
 							'prefecture_id' => $prefectureId,
 							'station_name' =>  $stationNames[0],
 							'temperature_highest' => $decoded[1],
-							'temperature_lowest' => $decoded[3],
+							'temperature_lowest' => $decoded[4],
 						];
 					}
 
@@ -456,10 +456,6 @@ class WeatherService
 							]
 						);
 					}
-				}
-				if ($n > 1000) {
-					Log::debug(__LINE__ . ' ' . __METHOD__);
-					break;
 				}
 
 				$n++;
