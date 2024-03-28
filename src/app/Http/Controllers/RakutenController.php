@@ -96,9 +96,8 @@ class RakutenController extends Controller
                 'hotels' => $json,
             ];
 
-
         } catch (Exception $e) {
-
+            Log::debug($e->getLine() . ' ' . $e->getMessage());
         }
 
         return view('rakuten.hotels', $params);
