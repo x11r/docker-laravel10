@@ -7,6 +7,7 @@
         <div class="h1 bg-red-50 p-2">
             <a href="{{ route('app.rakuten.areas')  }}">楽天トラベルAPI</a> 地域別ホテル一覧
         </div>
+        @if (isset($hotels['hotels'])) {
         @foreach ($hotels['hotels'] as $hotel)
             @php
                 $hotelBasicInfo = $hotel['hotel'][0]['hotelBasicInfo']
@@ -42,5 +43,6 @@
 
 {{--            <pre>{{ print_r($hotel) }}</pre>--}}
         @endforeach
+            @endif
     </div>
 @endsection
