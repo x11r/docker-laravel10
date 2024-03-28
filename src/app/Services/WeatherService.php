@@ -165,8 +165,9 @@ class WeatherService
 		Log::debug(__LINE__ . ' [download dir]' . $downloadDir);
 
 		if (! file_exists($downloadDir)) {
-			@mkdir($downloadDir, 0777, true);
+			mkdir($downloadDir, 0777, true);
 		}
+        chmod($downloadDir, 0777);
 
 		$options = new ChromeOptions();
 
@@ -181,6 +182,7 @@ class WeatherService
 		$options->setExperimentalOption('prefs', [
 			'download.prompt_for_download' => false,
 			'download.default_directory' => $downloadDir,
+            'download.directory_upgrade' => true,
 		]);
 
 		$dimension = new WebDriverDimension(1920, 1080);
@@ -234,7 +236,6 @@ class WeatherService
 
 			$driver->wait(10, 2000);
 
-			// 都道府県から東京都をクリック
 			$elementId = 'pr' . self::$prefectureSelect;
 			$driver->wait()->until(
 				 WebDriverExpectedCondition::elementToBeClickable(WebDriverBy::id($elementId))
@@ -312,6 +313,8 @@ class WeatherService
 
 			// ダウンロードボタン
 			$driver->findElement(WebDriverBy::id('csvdl'))->click();
+
+            sleep(3);
 			$driver->wait(5, 10);
 
 			$body = $driver->findElement(WebDriverBy::tagName('body'))->getText();
