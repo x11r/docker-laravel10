@@ -37,7 +37,6 @@ class WeatherDownloadCommand extends Command
 			. ' [end] ' . $end
 		);
 
-//		WeatherService::importDaily();
 		WeatherService::downloadWeatherCsv($prefecture, $start, $end);
     }
 }

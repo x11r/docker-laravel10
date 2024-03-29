@@ -20,16 +20,17 @@ services:
     build: ./php
     volumes:
       - ../src:/var/www
-      - lara10-vendor:/var/www/vendor
-      - lara10-framework:/var/www/storage/framework
-      - ./php/php.ini:/usr/local/etc/php/php.ini
-      - ./php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
+#      - lara10-vendor:/var/www/vendor
+#      - lara10-framework:/var/www/storage/framework
+#      - ./php/php.ini:/usr/local/etc/php/php.ini
+#      - ./php/xdebug.ini:/usr/local/etc/php/conf.d/xdebug.ini
       - ./share:/share
     working_dir: /var/www
+#    user: "${USER:-www-data}"
     environment:
       TZ: Asia/Tokyo
-      PHP_DEBUG_CONFIG: ${PHP_DEBUG_CONFIG}
-      PHP_IDE_CONFIG: ${PHP_DEBUG_CONFIG}
+#      PHP_DEBUG_CONFIG: ${PHP_DEBUG_CONFIG}
+      PHP_IDE_CONFIG: ${PHP_DEBUG_CONFIG:-serverName=dockerLaravel}
     depends_on:
       - db
   db:
@@ -59,5 +60,5 @@ services:
 
 volumes:
   mariadb-lara10:
-  lara10-vendor:
-  lara10-framework:
+#  lara10-vendor:
+#  lara10-framework:

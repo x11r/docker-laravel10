@@ -157,17 +157,32 @@ class WeatherService
 		// 環境変数から取得するように要修正
 		$shareDir = config('app.CHROMIUM_DOWNLOAD_DIR');
 
+        $prefectureDir = $shareDir . DIRECTORY_SEPARATOR . self::$prefectureSelect;
+
 		// ダウンロードディレクトリ
-		$downloadDir = $shareDir
-			. DIRECTORY_SEPARATOR . self::$prefectureSelect
+		$downloadDir = $prefectureDir
 			. DIRECTORY_SEPARATOR . $year;
 
 		Log::debug(__LINE__ . ' [download dir]' . $downloadDir);
 
 		if (! file_exists($downloadDir)) {
 			mkdir($downloadDir, 0777, true);
-		}
-        chmod($downloadDir, 0777);
+        }
+
+        // ダウンロードディレクトリのパーミッションを緩くする
+        if (! chmod($downloadDir, 0777)) {
+            Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $downloadDir . ' [failure chmod]');
+        }
+
+        // 都道府県ディレクトリのパーミッションを緩くする
+        if (! chmod($prefectureDir, 0777)) {
+            Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $prefectureDir. ' [failure chmod]');
+        }
+
+        if (! is_writable($downloadDir)) {
+            Log::error(__LINE__ . ' ' . __METHOD__ . ' ' . $downloadDir . ' is not writable.');
+            exit();
+        }
 
 		$options = new ChromeOptions();
 
@@ -185,7 +200,8 @@ class WeatherService
             'download.directory_upgrade' => true,
 		]);
 
-		$dimension = new WebDriverDimension(1920, 1080);
+        // メモリ不足になることが増えたので、解像度はあまり上げないようにする
+		$dimension = new WebDriverDimension(1600, 1200);
 		$capabilities = DesiredCapabilities::chrome();
 		$capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
 		$driver = RemoteWebDriver::create($baseUrl, $capabilities);
