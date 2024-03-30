@@ -117,7 +117,6 @@ class WeatherService
 		foreach ($prefectures as $prefecture) {
 
 			if ($prefectureId && $prefectureId != $prefecture['prefecture_id']) {
-
 				continue;
 			}
 
@@ -139,10 +138,13 @@ class WeatherService
 				);
 
 				// ダウンロード
-				self::downloadByBrowser($yearTarget);
+				$download = self::downloadByBrowser($yearTarget);
 
 				$yearTarget++;
-				sleep(3);
+
+                if ($download) {
+                    sleep(3);
+                }
 			}
 		}
 
@@ -167,6 +169,17 @@ class WeatherService
 
 		if (! file_exists($downloadDir)) {
 			mkdir($downloadDir, 0777, true);
+        } else if ($year !== date('Y')) {
+            // 今年分を除く
+
+            //既にダウンロードされていたら終了する
+            $handle = opendir($downloadDir);
+            while (($file = readdir($handle)) !== false) {
+                if ($file === 'data.csv') {
+                    Log::info(__METHOD__ . ' [downloaded]');
+                    return null;
+                }
+            }
         }
 
         // ダウンロードディレクトリのパーミッションを緩くする
@@ -362,6 +375,7 @@ class WeatherService
 
 			$driver->quit();
 			Log::debug(__LINE__ . ' ' . __METHOD__ . ' [finish]');
+            return true;
 
 		} catch (UnexpectedResponseException|UnrecognizedExceptionException|WebDriverException|Exception $e) {
 			Log::error($e->getMessage() . ' [line] ' . $e->getLine());
@@ -371,6 +385,8 @@ class WeatherService
 			// 最後にブラウザを閉じる
 			$driver->quit();
 		}
+
+        return false;
 	}
 
 	public static function fileName($line)

@@ -13,14 +13,19 @@ class WeatherDownloadCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:weather-download {--prefecture=} {--start=} {--end=}';
+    protected $signature = 'app:weather-download {--prefecture=} {--start=} {--end=} {--all}';
 
     /**
      * The console command description.
      *
      * @var string
      */
-    protected $description = 'download weather data and import {prefecture: prefecture} {start : start} {end: end}';
+    protected $description = 'download weather data and import
+        {prefecture: prefecture}
+        {start : start}
+        {end: end}
+        {all: all}
+    ';
 
     /**
      * Execute the console command.
@@ -30,6 +35,10 @@ class WeatherDownloadCommand extends Command
 		$prefecture = $this->option('prefecture');
 	    $start = $this->option('start');
 	    $end = $this->option('end');
+        if ($this->option('all')) {
+            $start = config('app.WEATHER_YEAR_START');
+            $end = date('Y');
+        }
 
 		Log::debug(__LINE__ . ' ' . __METHOD__
 			. ' [prefecture]' . $prefecture
