@@ -9,6 +9,8 @@ cache:
 	docker-compose exec app php artisan view:clear
 	docker-compose exec app php artisan cache:clear
 	docker-compose exec app php artisan config:clear
+daily:
+	docker-compose exec app php artisan app:weather-download --daily
 download:
 	docker-compose exec app php artisan app:weather-download
 import:

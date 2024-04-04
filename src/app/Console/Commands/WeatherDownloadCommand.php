@@ -13,7 +13,7 @@ class WeatherDownloadCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:weather-download {--prefecture=} {--start=} {--end=} {--all}';
+    protected $signature = 'app:weather-download {--prefecture=} {--start=} {--end=} {--all} {--daily}';
 
     /**
      * The console command description.
@@ -25,6 +25,7 @@ class WeatherDownloadCommand extends Command
         {start : start}
         {end: end}
         {all: all}
+        {daily: daily}
     ';
 
     /**
@@ -35,9 +36,18 @@ class WeatherDownloadCommand extends Command
 		$prefecture = $this->option('prefecture');
 	    $start = $this->option('start');
 	    $end = $this->option('end');
+
         if ($this->option('all')) {
             $start = config('app.WEATHER_YEAR_START');
             $end = date('Y');
+        } else if ($this->option('daily')) {
+            //
+            $start = date('Y');
+            $end = date('Y');
+            if (date('m') < 5) {
+                // 実行日が1月から間もない場合は先月分も取得する
+                $start = ((int)date('Y') - 1);
+            }
         }
 
 		Log::debug(__LINE__ . ' ' . __METHOD__
@@ -46,6 +56,7 @@ class WeatherDownloadCommand extends Command
 			. ' [end] ' . $end
 		);
 
-		WeatherService::downloadWeatherCsv($prefecture, $start, $end);
+		WeatherService::downloadWeatherCsv($prefecture, $start, $end, $this->option('daily'));
+        WeatherService::ImportCsv();
     }
 }
