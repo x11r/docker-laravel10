@@ -7,7 +7,8 @@ export default defineConfig({
         laravel({
             input: ['resources/js/app.js',
                 'resources/scss/app.sass',
-                'resources/js/rakuten.js'
+                'resources/js/rakuten.js',
+                'resources/js/weather.js'
             ],
             refresh: true,
         }),
