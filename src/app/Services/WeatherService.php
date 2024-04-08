@@ -18,6 +18,7 @@ use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverSelect;
 use Illuminate\Support\Facades\Log;
+use PhpParser\Node\Scalar\MagicConst\Dir;
 
 class WeatherService
 {
@@ -99,13 +100,16 @@ class WeatherService
 		self::importCsv();
 	}
 
-	/**
-	 * 気象庁からCSVをダウンロードしてDBに入れる
-	 *
-	 * @param null $year
-	 * @return void
-	 */
-	public static function downloadWeatherCsv($prefectureId = null, $start = null, $end = null): void
+    /**
+     * 気象庁からCSVをダウンロードしてDBに入れる
+     *
+     * @param null $prefectureId
+     * @param null $start
+     * @param null $end
+     * @param bool $override
+     * @return void
+     */
+	public static function downloadWeatherCsv($prefectureId = null, $start = null, $end = null, bool $override = false): void
 	{
 		Log::info(__METHOD__ . ' [START] [prefecture id] ' . $prefectureId
 			. ' [start] ' . $start
@@ -117,7 +121,6 @@ class WeatherService
 		foreach ($prefectures as $prefecture) {
 
 			if ($prefectureId && $prefectureId != $prefecture['prefecture_id']) {
-
 				continue;
 			}
 
@@ -139,17 +142,20 @@ class WeatherService
 				);
 
 				// ダウンロード
-				self::downloadByBrowser($yearTarget);
+				$download = self::downloadByBrowser($yearTarget, $override);
 
 				$yearTarget++;
-				sleep(3);
+
+                if ($download) {
+                    sleep(3);
+                }
 			}
 		}
 
 		Log::info(__METHOD__ . ' [END]');
 	}
 
-	public static function downloadByBrowser($year = null)
+	public static function downloadByBrowser($year = null, bool $override = false)
 	{
 		$baseUrl = self::BASE_URL;
 		$downloadUrl = self::DOWNLOAD_URL;
@@ -157,17 +163,48 @@ class WeatherService
 		// 環境変数から取得するように要修正
 		$shareDir = config('app.CHROMIUM_DOWNLOAD_DIR');
 
+        $prefectureDir = $shareDir . DIRECTORY_SEPARATOR . self::$prefectureSelect;
+
 		// ダウンロードディレクトリ
-		$downloadDir = $shareDir
-			. DIRECTORY_SEPARATOR . self::$prefectureSelect
+		$downloadDir = $prefectureDir
 			. DIRECTORY_SEPARATOR . $year;
 
 		Log::debug(__LINE__ . ' [download dir]' . $downloadDir);
 
+        // 上書きモードの時はディレクトリごと削除する
+        if ($override) {
+            self::rmdir($downloadDir);
+        }
+
 		if (! file_exists($downloadDir)) {
 			mkdir($downloadDir, 0777, true);
-		}
-        chmod($downloadDir, 0777);
+        } else if ($year !== date('Y')) {
+            // 今年分を除く
+
+            //既にダウンロードされていたら終了する
+            $handle = opendir($downloadDir);
+            while (($file = readdir($handle)) !== false) {
+                if ($file === 'data.csv') {
+                    Log::info(__METHOD__ . ' [downloaded]');
+                    return null;
+                }
+            }
+        }
+
+        // ダウンロードディレクトリのパーミッションを緩くする
+        if (! chmod($downloadDir, 0777)) {
+            Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $downloadDir . ' [failure chmod]');
+        }
+
+        // 都道府県ディレクトリのパーミッションを緩くする
+        if (! chmod($prefectureDir, 0777)) {
+            Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $prefectureDir. ' [failure chmod]');
+        }
+
+        if (! is_writable($downloadDir)) {
+            Log::error(__LINE__ . ' ' . __METHOD__ . ' ' . $downloadDir . ' is not writable.');
+            exit();
+        }
 
 		$options = new ChromeOptions();
 
@@ -179,13 +216,15 @@ class WeatherService
 			'--url-base=wd/hd',
 		]);
 
+        // ダウンロードの確認を表示しない設定
 		$options->setExperimentalOption('prefs', [
 			'download.prompt_for_download' => false,
 			'download.default_directory' => $downloadDir,
             'download.directory_upgrade' => true,
 		]);
 
-		$dimension = new WebDriverDimension(1920, 1080);
+        // メモリ不足になることが増えたので、解像度はあまり上げないようにする
+		$dimension = new WebDriverDimension(1600, 1200);
 		$capabilities = DesiredCapabilities::chrome();
 		$capabilities->setCapability(ChromeOptions::CAPABILITY, $options);
 		$driver = RemoteWebDriver::create($baseUrl, $capabilities);
@@ -346,6 +385,7 @@ class WeatherService
 
 			$driver->quit();
 			Log::debug(__LINE__ . ' ' . __METHOD__ . ' [finish]');
+            return true;
 
 		} catch (UnexpectedResponseException|UnrecognizedExceptionException|WebDriverException|Exception $e) {
 			Log::error($e->getMessage() . ' [line] ' . $e->getLine());
@@ -355,13 +395,15 @@ class WeatherService
 			// 最後にブラウザを閉じる
 			$driver->quit();
 		}
+
+        return false;
 	}
 
-	public static function fileName($line)
-	{
-		$dd = (new Carbon)->format('Ymd-His');
-		return storage_path('app/download/') . $dd . '-' . $line . '.png';
-	}
+//	public static function fileName($line)
+//	{
+//		$dd = (new Carbon)->format('Ymd-His');
+//		return storage_path('app/download/') . $dd . '-' . $line . '.png';
+//	}
 
 	public static function ImportCsv()
 	{
@@ -395,9 +437,8 @@ class WeatherService
 		}
 	}
 
-	public static function importWeatherData($filePath, int $prefectureId)
-	{
-
+	public static function importWeatherData($filePath, int $prefectureId): void
+    {
 		Log::info(__METHOD__ . ' [filePath] ' . $filePath);
 		if (($handle = fopen($filePath, 'r')) !== false) {
 
@@ -466,8 +507,8 @@ class WeatherService
 		}
 	}
 
-	public static function getWeathers(array $params)
-	{
+	public static function getWeathers(array $params): array
+    {
 		$prefecture_id = $params['prefecture_id'];
 
 		$results = [];
@@ -509,4 +550,23 @@ class WeatherService
 
 		return $results;
 	}
+
+    /**
+     * CSVファイルを削除する
+     * @param string $dirName
+     * @return void
+     */
+    private static function rmdir(string $dirName): void
+    {
+        if (is_dir($dirName) && is_writable($dirName)) {
+
+            $handle = opendir($dirName);
+            while(($file = readdir($handle))) {
+                $filePath = $dirName . DIRECTORY_SEPARATOR . $file;
+                if ($file === 'data.csv' && is_writable($filePath)) {
+                    unlink($filePath);
+                }
+            }
+        }
+    }
 }

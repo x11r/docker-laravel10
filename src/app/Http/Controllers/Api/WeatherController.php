@@ -53,6 +53,9 @@ class WeatherController extends Controller
 			'count' => $count,
 		];
 
-		return response()->json($result)->header('Access-Control-Allow-Origin', '*');
+		return response()->json($result)
+            ->header('Access-Control-Allow-Origin', '*')
+            ->header('Access-Control-Allow-Methods', 'GET')
+            ->header('Access-Control-Allow-Headers', 'Accept, X-Requested-With, Origin, Content-Type');
 	}
 }

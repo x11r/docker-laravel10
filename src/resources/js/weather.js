@@ -1,6 +1,6 @@
 // import { createApp, Vue } from 'vue'
 import { createApp, h } from 'vue'
-import { createInertiaApp } from '@inertiajs/inertia-vue3';
+// import { createInertiaApp } from '@inertiajs/inertia-vue3';
 // import { createInertiaApp } from '@inertiajs/'
 
 import './bootstrap.js'
@@ -11,7 +11,7 @@ import Index from './Pages/Weather/Index.vue'
 const appName = window.document.getElementsByTagName('title')[0]?.innerText || 'weather'
 
 createInertiaApp({
-    title: (title) => `${title} - ${appName}`,
+    // title: (title) => `${title} - ${appName}`,
 })
 
 // var app = new Vue({
