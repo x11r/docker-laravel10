@@ -216,6 +216,7 @@ class WeatherService
 			'--url-base=wd/hd',
 		]);
 
+        // ダウンロードの確認を表示しない設定
 		$options->setExperimentalOption('prefs', [
 			'download.prompt_for_download' => false,
 			'download.default_directory' => $downloadDir,
