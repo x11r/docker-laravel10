@@ -187,4 +187,6 @@ return [
 
 
     'RAKUTEN_APPLICATION_ID' => env('RAKUTEN_APPLICATION_ID'),
+
+	'CHROMIUM_DOWNLOAD_DIR' => env('CHROMIUM_DOWNLOAD_DIR', '/temp/weather/csv')
 ];

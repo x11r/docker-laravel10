@@ -39,14 +39,15 @@ Route::middleware('auth')->group(function () {
 });
 
 // 楽天APIを公開ページに設置してみる
-Route::group(['prefix' => 'rakuten', 'as' => 'rakuten.'], function () {
+Route::group(['prefix' => 'app/rakuten', 'as' => 'app.rakuten.'], function () {
 	Route::any('/', function () {
-		return redirect()->route('rakuten.areas');
+		return redirect()->route('app.rakuten.areas');
 	});
     Route::get('/area', [RakutenController::class, 'getAreas'])->name('areas');
     Route::get('/area/{middle}/{small}', [RakutenController::class, 'getSmall'])->name('area-small');
     Route::get('/area/{middle}/{small}/{detail}', [RakutenController::class, 'getDetail'])->name('area-detail');
     Route::get('/hotel/{hotelNo}', [RakutenController::class, 'hotelDetail'])->name('hotel-detail');
+    Route::get('/vue', [RakutenController::class, 'vueArea'])->name('vue-area');
 });
 
 Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], function () {
@@ -62,6 +63,13 @@ Route::group(['prefix' => 'admin', 'as' => 'admin.', 'middleware' => 'auth'], fu
         Route::get('/hotel/{hotel}', [AdminRakutenController::class, 'hotelDetail'])->name('hotel-detail');
         Route::get('/hotelRanking', [AdminRakutenController::class, 'hotelRanking'])->name('hotel-ranking');
     });
+});
+
+// 天気
+Route::group(['prefix' => 'app/weather/vue', 'as' => 'app.weather.vue'], function () {
+	Route::any('/', function () {
+		return view('weather.vue');
+	});
 });
 
 require __DIR__.'/auth.php';

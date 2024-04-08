@@ -9,10 +9,7 @@ use Exception;
 use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Foundation\Bootstrap\HandleExceptions;
-use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 
 class RakutenController extends Controller
@@ -31,18 +28,7 @@ class RakutenController extends Controller
      */
     public function getAreas(): View|\Illuminate\Foundation\Application|Factory|Application
     {
-        // キャッシュから取得
-        $cacheKey = __METHOD__;
-
-        $cacheExpire = 60 * 60 * 24 * 3;
-        $json = Cache::remember($cacheKey, $cacheExpire, function() {
-
-            // サービスを利用して取得
-            $response = RakutenApiService::getAreas();
-            $body = $response->body();
-            $json = json_decode($body, true);
-            return $json;
-        });
+        $json = RakutenApiService::getAreasJson();
 
         $params = [
             'areas' => $json,
@@ -110,9 +96,8 @@ class RakutenController extends Controller
                 'hotels' => $json,
             ];
 
-
         } catch (Exception $e) {
-
+            Log::debug($e->getLine() . ' ' . $e->getMessage());
         }
 
         return view('rakuten.hotels', $params);
@@ -164,4 +149,9 @@ class RakutenController extends Controller
 
         return view('rakuten.hotelDetail', $params);
     }
+
+	public function vueArea()
+	{
+		return view('rakuten.vue');
+	}
 }
