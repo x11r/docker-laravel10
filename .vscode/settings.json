@@ -1,0 +1,4 @@
+{
+    "phpstan.path": "~/.composer/vendor/bin/phpstan",
+    "php.validate.executablePath": "/usr/bin/php",
+}

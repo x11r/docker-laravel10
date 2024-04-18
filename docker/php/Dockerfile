@@ -24,7 +24,7 @@ COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 #    && docker-php-ext-enable apcu xdebug \
 
 RUN apt-get -y update && apt-get -y upgrade \
-    && apt-get -y install git unzip vim supervisor tmux wget gnupg2 libzip-dev \
+    && apt-get -y install sudo git unzip vim supervisor tmux wget gnupg2 libzip-dev \
     && pecl install apcu xdebug \
     && docker-php-ext-install mysqli pdo_mysql opcache zip \
     && docker-php-ext-enable apcu xdebug \
