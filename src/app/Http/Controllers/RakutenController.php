@@ -14,7 +14,6 @@ use Illuminate\Support\Facades\Log;
 
 class RakutenController extends Controller
 {
-
     // 楽天APIのアプリケーションID
     protected string $applicationId;
 
@@ -25,6 +24,7 @@ class RakutenController extends Controller
 
     /**
      * @return View|\Illuminate\Foundation\Application|Factory|Application
+     * @throws Exception
      */
     public function getAreas(): View|\Illuminate\Foundation\Application|Factory|Application
     {
@@ -55,9 +55,9 @@ class RakutenController extends Controller
      * @param string $middle
      * @param string $small
      * @param string $detail
-     * @return null
+     * @return array|null
      */
-    public function getDetail(string $middle, string $small, string $detail)
+    public function getDetail(string $middle, string $small, string $detail): array|null
     {
         return $this->getHotelMulti(['middle' => $middle, 'small' => $small, 'detail' => $detail]);
     }
@@ -65,10 +65,10 @@ class RakutenController extends Controller
     /**
      * エリアを取得
      *
-     * @param array $param
-     * @return null
+     * @param array $params
+     * @return array|null
      */
-    public function getHotelMulti(array $params)
+    public function getHotelMulti(array $params) :array|null
     {
         // キャッシュから取得
         $cacheKey = __METHOD__ . ' ' . json_encode($params);
@@ -76,7 +76,6 @@ class RakutenController extends Controller
         $cacheExpire = 60 * 60 * 24 * 3;
 
         try {
-
             if (Cache::has($cacheKey)) {
                 Log::debug(__LINE__ . ' ' . __METHOD__. ' use cache ');
                 $json = Cache::get($cacheKey);
@@ -95,7 +94,6 @@ class RakutenController extends Controller
             $params = [
                 'hotels' => $json,
             ];
-
         } catch (Exception $e) {
             Log::debug($e->getLine() . ' ' . $e->getMessage());
         }
@@ -113,13 +111,10 @@ class RakutenController extends Controller
         $cacheKey = __METHOD__ . ' ' . $hotelNo;
         $cacheExpire = 60 * 60 * 24 * 1;
         try {
-
             if (Cache::has($cacheKey)) {
                 $json = Cache::get($cacheKey);
                 Log::debug(__LINE__ . ' ' . __METHOD__ . ' use cache');
-
             } else {
-
                 $response = RakutenApiService::getHotel((int)$hotelNo);
                 $body = $response->body();
                 $status = $response->status();
@@ -139,7 +134,6 @@ class RakutenController extends Controller
             $params = [
                 'hotels' => $json->hotels,
             ];
-
         } catch (Exception $e) {
             echo $e->getMessage();
 
@@ -150,8 +144,8 @@ class RakutenController extends Controller
         return view('rakuten.hotelDetail', $params);
     }
 
-	public function vueArea()
-	{
-		return view('rakuten.vue');
-	}
+    public function vueArea()
+    {
+        return view('rakuten.vue');
+    }
 }

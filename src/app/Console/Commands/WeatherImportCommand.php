@@ -28,7 +28,6 @@ class WeatherImportCommand extends Command
      */
     public function handle()
     {
-		WeatherService::ImportCsv();
+  		WeatherService::ImportCsv();
     }
-
 }
