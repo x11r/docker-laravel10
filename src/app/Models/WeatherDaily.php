@@ -9,6 +9,6 @@ class WeatherDaily extends Model
 {
     use HasFactory;
 
-	private static $prefectures = [
-	];
+    private static $prefectures = [
+    ];
 }

@@ -33,14 +33,14 @@ class WeatherDownloadCommand extends Command
      */
     public function handle()
     {
-		$prefecture = $this->option('prefecture');
-	    $start = $this->option('start');
-	    $end = $this->option('end');
+        $prefecture = $this->option('prefecture');
+        $start = $this->option('start');
+        $end = $this->option('end');
 
         if ($this->option('all')) {
             $start = config('app.WEATHER_YEAR_START');
             $end = date('Y');
-        } else if ($this->option('daily')) {
+        } elseif ($this->option('daily')) {
             //
             $start = date('Y');
             $end = date('Y');
@@ -50,13 +50,12 @@ class WeatherDownloadCommand extends Command
             }
         }
 
-		Log::debug(__LINE__ . ' ' . __METHOD__
-			. ' [prefecture]' . $prefecture
-			. ' [start] ' . $start
-			. ' [end] ' . $end
-		);
+        Log::debug(__LINE__ . ' ' . __METHOD__
+            . ' [prefecture]' . $prefecture
+            . ' [start] ' . $start
+            . ' [end] ' . $end);
 
-		WeatherService::downloadWeatherCsv($prefecture, $start, $end, $this->option('daily'));
+        WeatherService::downloadWeatherCsv($prefecture, $start, $end, $this->option('daily'));
         WeatherService::ImportCsv();
     }
 }

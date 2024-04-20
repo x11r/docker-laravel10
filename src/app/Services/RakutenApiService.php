@@ -47,20 +47,20 @@ class RakutenApiService
         return $json;
     }
 
-	/**
-	 * 楽天APIのエリア情報を取得する
+    /**
+     * 楽天APIのエリア情報を取得する
      *
-	 * @return Response
-	 */
-	public static function getAreas(): Response
-	{
-		$applicationId = config('app.RAKUTEN_APPLICATION_ID');
+     * @return Response
+     */
+    public static function getAreas(): Response
+    {
+        $applicationId = config('app.RAKUTEN_APPLICATION_ID');
 
-		$url = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
-			. 'format=json&applicationId=' . $applicationId;
+        $url = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
+            . 'format=json&applicationId=' . $applicationId;
 
-		return Http::get($url);
-	}
+        return Http::get($url);
+    }
 
     /**
      * エリアを絞り込んでホテル一覧を返却する
@@ -93,7 +93,13 @@ class RakutenApiService
         return Http::get($url);
     }
 
-    public static function getHotel(int $hotelNo)
+    /**
+     * ホテル情報を返す
+     *
+     * @param int $hotelNo
+     * @return Response
+     */
+    public static function getHotel(int $hotelNo): Response
     {
         $applicationId = config('app.RAKUTEN_APPLICATION_ID');
 
