@@ -107,7 +107,6 @@ class RakutenController extends Controller
      */
     public function hotelDetail(int $hotelNo)
     {
-
         $cacheKey = __METHOD__ . ' ' . $hotelNo;
         $cacheExpire = 60 * 60 * 24 * 1;
         try {
