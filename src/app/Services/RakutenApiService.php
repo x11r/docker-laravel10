@@ -12,7 +12,6 @@ use Illuminate\Support\Facades\Log;
 
 class RakutenApiService
 {
-
     /**
      * 取得したエリアをキャッシュを利用する
      * @return mixed
@@ -66,9 +65,9 @@ class RakutenApiService
      * エリアを絞り込んでホテル一覧を返却する
      *
      * @param array $params
-     * @return Response
+     * @return array
      */
-    public static function getArea(array $params): Response
+    public static function getArea(array $params): array
     {
         $applicationId = config('app.RAKUTEN_APPLICATION_ID');
 
@@ -90,16 +89,20 @@ class RakutenApiService
             $url .= '&detailClassCode=' . $params['detail'];
         }
 
-        return Http::get($url);
+        $response = Http::get($url);
+        $body = $response->body();
+        $json = json_decode($body, true);
+
+        return $json;
     }
 
     /**
      * ホテル情報を返す
      *
      * @param int $hotelNo
-     * @return Response
+     * @return array
      */
-    public static function getHotel(int $hotelNo): Response
+    public static function getHotel(int $hotelNo): array
     {
         $applicationId = config('app.RAKUTEN_APPLICATION_ID');
 
@@ -107,6 +110,43 @@ class RakutenApiService
             . '&applicationId=' . $applicationId
             . '&hotelNo=' . $hotelNo;
 
-        return Http::get($url);
+
+        $cacheKey = __METHOD__ . ' ' . $hotelNo;
+        $cacheExpire = 60 * 60 * 24 * 1;
+        try {
+//            if (Cache::has($cacheKey)) {
+//                $response = Cache::get($cacheKey);
+//                Log::debug(__LINE__ . ' ' . __METHOD__ . ' use cache');
+//            } else {
+//                $response = Http::get($url);
+//
+//                Log::debug(__LINE__ . ' ' . __METHOD__ . ' no cache');
+//
+////                Cache::put($cacheKey, $response, $cacheExpire);
+//            }
+
+            // 強制取得
+            $response = Http::get($url);
+
+            $body = $response->body();
+            $status = $response->status();
+
+            if ($status !== 200) {
+                throw new Exception('情報取得できませんでした。');
+            }
+
+            $json = json_decode($body);
+
+            $result = [
+                'hotels' => $json->hotels,
+            ];
+        } catch (Exception $e) {
+            echo $e->getMessage();
+
+            session()->flush();
+            exit();
+        }
+
+        return $result;
     }
 }

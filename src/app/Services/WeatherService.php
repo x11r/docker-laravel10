@@ -63,7 +63,7 @@ class WeatherService
      * 毎日のバッチ用
      * @return void
      */
-    public static function importDaily()
+    public static function importDaily(): void
     {
         Log::info(__METHOD__ . ' [start]');
         // ダウンロード
@@ -109,7 +109,12 @@ class WeatherService
      * @param bool $override
      * @return void
      */
-    public static function downloadWeatherCsv($prefectureId = null, $start = null, $end = null, bool $override = false): void
+    public static function downloadWeatherCsv(
+        $prefectureId = null,
+        $start = null,
+        $end = null,
+        bool $override = false
+    ): void
     {
         Log::info(__METHOD__ . ' [START] [prefecture id] ' . $prefectureId
             . ' [start] ' . $start
@@ -187,19 +192,14 @@ class WeatherService
             }
         }
 
-        // ダウンロードディレクトリのパーミッションを緩くする
-        if (! chmod($downloadDir, 0777)) {
-            Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $downloadDir . ' [failure chmod]');
-        }
-
         // 都道府県ディレクトリのパーミッションを緩くする
-        if (! chmod($prefectureDir, 0777)) {
+        if (is_writable($prefectureDir) && @chmod($prefectureDir, 0777)) {
             Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $prefectureDir. ' [failure chmod]');
         }
 
-        if (! is_writable($downloadDir)) {
-            Log::error(__LINE__ . ' ' . __METHOD__ . ' ' . $downloadDir . ' is not writable.');
-            exit();
+        // ダウンロードディレクトリのパーミッションを緩くする
+        if (is_writable($downloadDir)  && @chmod($downloadDir, 0777)) {
+            Log::debug(__LINE__ . ' ' . __METHOD__ . ' ' . $downloadDir . ' [failure chmod]');
         }
 
         $options = new ChromeOptions();

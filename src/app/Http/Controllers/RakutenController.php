@@ -55,50 +55,37 @@ class RakutenController extends Controller
      * @param string $middle
      * @param string $small
      * @param string $detail
-     * @return array|null
+     * @return Application|Factory|\Illuminate\Foundation\Application|View
      */
-    public function getDetail(string $middle, string $small, string $detail): array|null
+    public function getDetail(string $middle, string $small, string $detail)
     {
-        return $this->getHotelMulti(['middle' => $middle, 'small' => $small, 'detail' => $detail]);
+        $params = [
+            'middle' => $middle,
+            'small' => $small,
+            'detail' => $detail,
+        ];
+
+        $result = [
+            'hotels' => RakutenApiService::getArea($params)
+        ];
+
+        return view('rakuten.hotels', $result);
+
     }
 
     /**
      * エリアを取得
      *
      * @param array $params
-     * @return array|null
+     * @return Factory|\Illuminate\Foundation\Application|View|Application
      */
-    public function getHotelMulti(array $params) :array|null
+    public function getHotelMulti(array $params): Factory|\Illuminate\Foundation\Application|View|Application
     {
-        // キャッシュから取得
-        $cacheKey = __METHOD__ . ' ' . json_encode($params);
+        $result = [
+            'hotels' => RakutenApiService::getArea($params)
+        ];
 
-        $cacheExpire = 60 * 60 * 24 * 3;
-
-        try {
-            if (Cache::has($cacheKey)) {
-                Log::debug(__LINE__ . ' ' . __METHOD__. ' use cache ');
-                $json = Cache::get($cacheKey);
-            } else {
-                $json = Cache::remember($cacheKey, $cacheExpire, function () use ($params) {
-
-                    $response = RakutenApiService::getArea($params);
-                    $body = $response->body();
-                    $json = json_decode($body, true);
-                    return $json;
-                });
-
-                Cache::put($cacheKey, $json, $cacheExpire);
-            }
-
-            $params = [
-                'hotels' => $json,
-            ];
-        } catch (Exception $e) {
-            Log::debug($e->getLine() . ' ' . $e->getMessage());
-        }
-
-        return view('rakuten.hotels', $params);
+        return view('rakuten.hotels', $result);
     }
 
     /**
@@ -107,40 +94,8 @@ class RakutenController extends Controller
      */
     public function hotelDetail(int $hotelNo)
     {
-        $cacheKey = __METHOD__ . ' ' . $hotelNo;
-        $cacheExpire = 60 * 60 * 24 * 1;
-        try {
-            if (Cache::has($cacheKey)) {
-                $json = Cache::get($cacheKey);
-                Log::debug(__LINE__ . ' ' . __METHOD__ . ' use cache');
-            } else {
-                $response = RakutenApiService::getHotel((int)$hotelNo);
-                $body = $response->body();
-                $status = $response->status();
-
-                if ($status != 200) {
-                    throw new Exception('情報取得できませんでした。');
-                }
-
-                Log::debug(__LINE__ . ' ' . __METHOD__ . ' no cache requesting');
-
-                // JSONを配列に変換
-                $json = json_decode($body);
-
-                Cache::put($cacheKey, $json, $cacheExpire);
-            }
-
-            $params = [
-                'hotels' => $json->hotels,
-            ];
-        } catch (Exception $e) {
-            echo $e->getMessage();
-
-            session()->flush();
-            exit();
-        }
-
-        return view('rakuten.hotelDetail', $params);
+        $result = RakutenApiService::getHotel($hotelNo);
+        return view('rakuten.hotelDetail', $result);
     }
 
     public function vueArea()
