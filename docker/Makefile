@@ -2,7 +2,8 @@
 include ./.env
 
 app:
-	docker-compose exec --user root app bash
+	docker-compose exec app bash
+	#docker-compose exec --user root app bash
 build:
 	docker-compose up -d --build
 cache:
@@ -29,8 +30,8 @@ restart:
 	docker-compose up -d
 stop:
 	docker-compose stop
-test:
-	docker-compose exec app php artisan test
+#test:
+	#docker-compose exec app php artisan test --coverage
 up:
 	docker-compose up -d
 web:

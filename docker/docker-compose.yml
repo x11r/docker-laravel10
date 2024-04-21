@@ -29,7 +29,7 @@ services:
     environment:
       TZ: Asia/Tokyo
       PHP_IDE_CONFIG: ${PHP_DEBUG_CONFIG:-serverName=dockerLaravel}
-    user: www-data
+    user: "${USER_ID}:${GROUP_ID}"
     depends_on:
       - db
   db:
