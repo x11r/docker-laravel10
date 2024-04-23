@@ -6,29 +6,22 @@ namespace App\Http\Controllers;
 
 use App\Services\RakutenApiService;
 use Exception;
-use Illuminate\Contracts\Foundation\Application;
-use Illuminate\Contracts\View\Factory;
 use Illuminate\Contracts\View\View;
-use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 class RakutenController extends Controller
 {
-    // 楽天APIのアプリケーションID
-    protected string $applicationId;
-
-    public function __construct()
-    {
-        $this->applicationId = config('app.RAKUTEN_APPLICATION_ID');
+    public function __construct(
+        private RakutenApiService $rakutenApiService
+    ) {
     }
 
     /**
-     * @return View|\Illuminate\Foundation\Application|Factory|Application
+     * @return View
      * @throws Exception
      */
-    public function getAreas(): View|\Illuminate\Foundation\Application|Factory|Application
+    public function getAreas(): View
     {
-        $json = RakutenApiService::getAreasJson();
+        $json = $this->rakutenApiService->getAreasJson();
 
         $params = [
             'areas' => $json,
@@ -42,9 +35,9 @@ class RakutenController extends Controller
      *
      * @param string $middle
      * @param string $small
-     * @return null
+     * @return View
      */
-    public function getSmall(string $middle, string $small)
+    public function getSmall(string $middle, string $small): View
     {
         return $this->getHotelMulti(['middle' => $middle, 'small' => $small]);
     }
@@ -55,9 +48,9 @@ class RakutenController extends Controller
      * @param string $middle
      * @param string $small
      * @param string $detail
-     * @return Application|Factory|\Illuminate\Foundation\Application|View
+     * @return View
      */
-    public function getDetail(string $middle, string $small, string $detail)
+    public function getDetail(string $middle, string $small, string $detail): View
     {
         $params = [
             'middle' => $middle,
@@ -66,39 +59,42 @@ class RakutenController extends Controller
         ];
 
         $result = [
-            'hotels' => RakutenApiService::getArea($params)
+            'hotels' => $this->rakutenApiService->getArea($params)
         ];
 
         return view('rakuten.hotels', $result);
-
     }
 
     /**
      * エリアを取得
      *
      * @param array $params
-     * @return Factory|\Illuminate\Foundation\Application|View|Application
+     * @return View
      */
-    public function getHotelMulti(array $params): Factory|\Illuminate\Foundation\Application|View|Application
+    public function getHotelMulti(array $params): View
     {
         $result = [
-            'hotels' => RakutenApiService::getArea($params)
+            'hotels' => $this->rakutenApiService->getArea($params)
         ];
 
         return view('rakuten.hotels', $result);
     }
 
     /**
-     * @param string $hotel
-     * @return Application|Factory|View|\Illuminate\Foundation\Application
+     * ホテル情報を表示
+     * @param int $hotelNo
+     * @return View
      */
-    public function hotelDetail(int $hotelNo)
+    public function hotelDetail(int $hotelNo): View
     {
-        $result = RakutenApiService::getHotel($hotelNo);
+        $result = $this->rakutenApiService->getHotel($hotelNo);
         return view('rakuten.hotelDetail', $result);
     }
 
-    public function vueArea()
+    /**
+     * @return View
+     */
+    public function vueArea(): View
     {
         return view('rakuten.vue');
     }

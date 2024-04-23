@@ -8,17 +8,24 @@ use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
-use Illuminate\Support\Facades\Log;
+//use Illuminate\Support\Facades\Log;
 
 class RakutenApiService
 {
+    protected string $applicationId = '';
+
+    public function __construct()
+    {
+        $this->applicationId = (string)config('app.RAKUTEN_APPLICATION_ID');
+    }
+
     /**
      * 取得したエリアをキャッシュを利用する
      * @return mixed
+     * @throws Exception
      */
-    public static function getAreasJson(): mixed
+    public function getAreasJson(): mixed
     {
-
         $cacheExpire = 60 * 60 * 24 * 3;
         $cacheKey = __METHOD__;
 
@@ -41,9 +48,7 @@ class RakutenApiService
 //            Cache::put($cacheKey . $body, $cacheExpire);
         }
 
-        $json = json_decode($body);
-
-        return $json;
+        return json_decode($body);
     }
 
     /**
@@ -51,9 +56,9 @@ class RakutenApiService
      *
      * @return Response
      */
-    public static function getAreas(): Response
+    public function getAreas(): Response
     {
-        $applicationId = config('app.RAKUTEN_APPLICATION_ID');
+        $applicationId = $this->applicationId;
 
         $url = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
             . 'format=json&applicationId=' . $applicationId;
@@ -102,17 +107,16 @@ class RakutenApiService
      * @param int $hotelNo
      * @return array
      */
-    public static function getHotel(int $hotelNo): array
+    public function getHotel(int $hotelNo): array
     {
-        $applicationId = config('app.RAKUTEN_APPLICATION_ID');
+        $applicationId = $this->applicationId;
 
         $url = 'https://app.rakuten.co.jp/services/api/Travel/VacantHotelSearch/20170426?format=json'
             . '&applicationId=' . $applicationId
             . '&hotelNo=' . $hotelNo;
 
-
-        $cacheKey = __METHOD__ . ' ' . $hotelNo;
-        $cacheExpire = 60 * 60 * 24 * 1;
+//        $cacheKey = __METHOD__ . ' ' . $hotelNo;
+//        $cacheExpire = 60 * 60 * 24 * 1;
         try {
 //            if (Cache::has($cacheKey)) {
 //                $response = Cache::get($cacheKey);

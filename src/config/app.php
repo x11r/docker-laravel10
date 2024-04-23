@@ -185,10 +185,7 @@ return [
         // 'Example' => App\Facades\Example::class,
     ])->toArray(),
 
-
-    'RAKUTEN_APPLICATION_ID' => env('RAKUTEN_APPLICATION_ID'),
-
-	'CHROMIUM_DOWNLOAD_DIR' => env('CHROMIUM_DOWNLOAD_DIR', '/temp/weather/csv'),
-
+    'RAKUTEN_APPLICATION_ID' => env('RAKUTEN_APPLICATION_ID', ''),
+    'CHROMIUM_DOWNLOAD_DIR' => env('CHROMIUM_DOWNLOAD_DIR', '/temp/weather/csv'),
     'WEATHER_YEAR_START' => 1872,
 ];
