@@ -44,21 +44,6 @@ class WeatherService
     private static ?string $dateStart = null;
     private static ?string $dateEnd = null;
 
-    private static array $prefectures = [
-        [
-            'prefecture_id' => 44,
-            'station' => ['東京', '八王子']
-        ],
-        [
-            'prefecture_id' => 82,
-            'station' => ['福岡']
-        ],
-        [
-            'prefecture_id' => 85,
-            'station' => ['唐津', '佐賀']
-        ],
-    ];
-
     /**
      * 毎日のバッチ用
      * @return void
@@ -69,7 +54,7 @@ class WeatherService
         // ダウンロード
         // 地区一覧
 
-        $prefectures = self::$prefectures;
+        $prefectures = config('app.PREFECTURES');
 
         foreach ($prefectures as $prefecture) {
             $dateStart = (new Carbon)->addDays(-30);
@@ -114,13 +99,12 @@ class WeatherService
         $start = null,
         $end = null,
         bool $override = false
-    ): void
-    {
+    ): void {
         Log::info(__METHOD__ . ' [START] [prefecture id] ' . $prefectureId
             . ' [start] ' . $start
             . ' [end] ' . $end);
 
-        $prefectures = self::$prefectures;
+        $prefectures = config('app.PREFECTURES');
 
         foreach ($prefectures as $prefecture) {
             if ($prefectureId && $prefectureId != $prefecture['prefecture_id']) {

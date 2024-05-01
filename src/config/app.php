@@ -188,4 +188,24 @@ return [
     'RAKUTEN_APPLICATION_ID' => env('RAKUTEN_APPLICATION_ID', ''),
     'CHROMIUM_DOWNLOAD_DIR' => env('CHROMIUM_DOWNLOAD_DIR', '/temp/weather/csv'),
     'WEATHER_YEAR_START' => 1872,
+
+    // 気象情報取得可能都道府県一覧
+    'PREFECTURES' => [
+        [
+            'prefecture_id' => 14,
+            'station' => ['札幌']
+        ],
+        [
+            'prefecture_id' => 44,
+            'station' => ['東京', '八王子']
+        ],
+        [
+            'prefecture_id' => 82,
+            'station' => ['福岡']
+        ],
+        [
+            'prefecture_id' => 85,
+            'station' => ['唐津', '佐賀']
+        ],
+    ],
 ];

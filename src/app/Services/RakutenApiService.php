@@ -8,15 +8,34 @@ use Exception;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
+
 //use Illuminate\Support\Facades\Log;
 
 class RakutenApiService
 {
+    protected int $cacheExpire = 0;
     protected string $applicationId = '';
+
+    protected string $getAreaUrl = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
+    . 'format=json&applicationId=';
+
+    protected string $getHotelUrl = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426?'
+        . 'format=json&applicationId=';
 
     public function __construct()
     {
+        $this->cacheExpire = 60 * 60 * 24;
         $this->applicationId = (string)config('app.RAKUTEN_APPLICATION_ID');
+        $this->getAreaUrl .= $this->applicationId;
+        $this->getHotelUrl .= $this->applicationId;
+    }
+
+    /**
+     * @return string
+     */
+    public function getApplicationId(): string
+    {
+        return $this->applicationId;
     }
 
     /**
@@ -32,7 +51,7 @@ class RakutenApiService
         if (Cache::has($cacheKey)) {
             $body = Cache::get($cacheKey);
         } else {
-            $response = self::getAreas();
+            $response = $this->getAreas();
 
             $status = $response->status();
 
@@ -60,8 +79,7 @@ class RakutenApiService
     {
         $applicationId = $this->applicationId;
 
-        $url = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
-            . 'format=json&applicationId=' . $applicationId;
+        $url = $this->getAreaUrl . $applicationId;
 
         return Http::get($url);
     }
@@ -72,13 +90,11 @@ class RakutenApiService
      * @param array $params
      * @return array
      */
-    public static function getArea(array $params): array
+    public function getArea(array $params): array
     {
-        $applicationId = config('app.RAKUTEN_APPLICATION_ID');
+        $applicationId = $this->applicationId;
 
-        $url = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426?'
-            . 'format=json'
-            . '&applicationId=' . $applicationId;
+        $url = $this->getHotelUrl . $applicationId;
 
         $url .= '&largeClassCode=japan';
 
@@ -94,8 +110,26 @@ class RakutenApiService
             $url .= '&detailClassCode=' . $params['detail'];
         }
 
+        $cacheKey = __METHOD__ . ' ' . serialize($params);
+
+        Cache::forget($cacheKey);
+
+        if (Cache::has($cacheKey)) {
+            // キャッシュがあったらキャッシュを返す
+            $body = Cache::get($cacheKey);
+        } else {
+            $response = Http::get($url);
+            $status = $response->status();
+            if ($status !== 200) {
+                throw new Exception('情報を取得できませんでした');
+            }
+            $body = $response->body();
+            Cache::put($cacheKey, $body, $this->cacheExpire);
+        }
+
         $response = Http::get($url);
         $body = $response->body();
+
         $json = json_decode($body, true);
 
         return $json;

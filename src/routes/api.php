@@ -21,11 +21,11 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 
 Route::group(['prefix' => 'rakuten'], function () {
-	Route::get('areas', [RakutenController::class, 'getAreas']);
-	Route::get('hotels', [RakutenController::class, 'getHotels']);
-	Route::get('hotel/{hotel}', [RakutenController::class, 'getHotel']);
+    Route::get('areas', [RakutenController::class, 'getAreas']);
+    Route::get('hotels', [RakutenController::class, 'getHotels']);
+    Route::get('hotel/{hotel}', [RakutenController::class, 'getHotel']);
 });
 
 Route::group(['prefix' => 'weather'], function () {
-	Route::get('get', [WeatherController::class, 'get']);
+    Route::get('get', [WeatherController::class, 'get']);
 });
