@@ -9,21 +9,25 @@ use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Http;
 
-//use Illuminate\Support\Facades\Log;
-
 class RakutenApiService
 {
     protected int $cacheExpire = 0;
     protected string $applicationId = '';
 
+    /**
+     * エリア情報取得URL
+     * @var string
+     */
     protected string $getAreaUrl = 'https://app.rakuten.co.jp/services/api/Travel/GetAreaClass/20131024?'
     . 'format=json&applicationId=';
 
     protected string $getHotelUrl = 'https://app.rakuten.co.jp/services/api/Travel/SimpleHotelSearch/20170426?'
         . 'format=json&applicationId=';
 
-    public function __construct()
-    {
+    public function __construct(
+        private readonly Cache $cache,
+        private readonly Http $http
+    ) {
         $this->cacheExpire = 60 * 60 * 24;
         $this->applicationId = (string)config('app.RAKUTEN_APPLICATION_ID');
         $this->getAreaUrl .= $this->applicationId;
@@ -48,8 +52,9 @@ class RakutenApiService
         $cacheExpire = 60 * 60 * 24 * 3;
         $cacheKey = __METHOD__;
 
-        if (Cache::has($cacheKey)) {
-            $body = Cache::get($cacheKey);
+        if ($this->cache::has($cacheKey)) {
+            // キャッシュから取得
+            $body = $this->cache::get($cacheKey);
         } else {
             $response = $this->getAreas();
 
@@ -60,11 +65,8 @@ class RakutenApiService
             }
 
             $body = $response->body();
-//            Log::debug(__LINE__ . ' '. __METHOD__
-//                . ' [key] ' . $cacheKey
-//            );
 
-//            Cache::put($cacheKey . $body, $cacheExpire);
+            $this->cache::put($cacheKey . $body, $cacheExpire);
         }
 
         return json_decode($body);
@@ -77,11 +79,9 @@ class RakutenApiService
      */
     public function getAreas(): Response
     {
-        $applicationId = $this->applicationId;
+        $url = $this->getAreaUrl;
 
-        $url = $this->getAreaUrl . $applicationId;
-
-        return Http::get($url);
+        return $this->http::get($url);
     }
 
     /**
@@ -89,12 +89,11 @@ class RakutenApiService
      *
      * @param array $params
      * @return array
+     * @throws Exception
      */
     public function getArea(array $params): array
     {
-        $applicationId = $this->applicationId;
-
-        $url = $this->getHotelUrl . $applicationId;
+        $url = $this->getHotelUrl;
 
         $url .= '&largeClassCode=japan';
 
@@ -112,23 +111,21 @@ class RakutenApiService
 
         $cacheKey = __METHOD__ . ' ' . serialize($params);
 
-        Cache::forget($cacheKey);
+        $this->cache::forget($cacheKey);
 
-        if (Cache::has($cacheKey)) {
+        if ($this->cache::has($cacheKey)) {
             // キャッシュがあったらキャッシュを返す
-            $body = Cache::get($cacheKey);
+            $body = $this->cache::get($cacheKey);
         } else {
-            $response = Http::get($url);
+            $response = $this->http::get($url);
             $status = $response->status();
             if ($status !== 200) {
                 throw new Exception('情報を取得できませんでした');
             }
-            $body = $response->body();
-            Cache::put($cacheKey, $body, $this->cacheExpire);
-        }
 
-        $response = Http::get($url);
-        $body = $response->body();
+            $body = $response->body();
+            $this->cache::put($cacheKey, $body, $this->cacheExpire);
+        }
 
         $json = json_decode($body, true);
 
@@ -164,7 +161,7 @@ class RakutenApiService
 //            }
 
             // 強制取得
-            $response = Http::get($url);
+            $response = $this->http::get($url);
 
             $body = $response->body();
             $status = $response->status();
