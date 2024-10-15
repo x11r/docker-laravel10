@@ -1,0 +1,27 @@
+
+prefectures: [
+  {
+    id: 44,
+    name: '東京京都',
+    stations: [
+      '東京',
+      '八王子'
+    ]
+  }
+  {
+      id: 45,
+      name: '千葉県',
+      stations: ['銚子']
+  }
+  {
+    id: 82,
+    name: '福岡県',
+    stations: ['福岡']
+  }
+  {
+    id: 85,
+    name: '佐賀県',
+    stations: ['佐賀', '唐津']
+  }
+]
+

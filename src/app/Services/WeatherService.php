@@ -18,7 +18,7 @@ use Facebook\WebDriver\WebDriverDimension;
 use Facebook\WebDriver\WebDriverExpectedCondition;
 use Facebook\WebDriver\WebDriverSelect;
 use Illuminate\Support\Facades\Log;
-use PhpParser\Node\Scalar\MagicConst\Dir;
+use Symfony\Component\Yaml\Yaml;
 
 class WeatherService
 {
@@ -44,20 +44,29 @@ class WeatherService
     private static ?string $dateStart = null;
     private static ?string $dateEnd = null;
 
-    private static array $prefectures = [
-        [
-            'prefecture_id' => 44,
-            'station' => ['東京', '八王子']
-        ],
-        [
-            'prefecture_id' => 82,
-            'station' => ['福岡']
-        ],
-        [
-            'prefecture_id' => 85,
-            'station' => ['唐津', '佐賀']
-        ],
-    ];
+	// YAMLファイルのファイル名(app/storageにある前提)
+	private static $yamlFileName = 'weather.yml';
+
+	// downloadCsvAllが実行された回数
+	private static int $downloadCsvAllCount = 0;
+
+	// downloadCsvAllが実行回数の上限
+	private static int $downloadCsvAllLimit = 5;
+
+	// 定数を返す
+	public static function getConstants(): array
+	{
+		// yamlに記述して配列で返す
+
+		$yamFilePath = resource_path(self::$yamlFileName);
+
+		$yaml = Yaml::parseFile($yamFilePath);
+
+		// 追加項目
+		$yaml['yearStart'] = config('app.WEATHER_YEAR_START');
+
+		return $yaml;
+	}
 
     /**
      * 毎日のバッチ用
@@ -120,21 +129,24 @@ class WeatherService
             . ' [start] ' . $start
             . ' [end] ' . $end);
 
-        $prefectures = self::$prefectures;
+	    $constants = self::getConstants();
+		$prefectures = $constants['prefectures'];
+
+		$end = $end ?: (new Carbon())->format('Y');
 
         foreach ($prefectures as $prefecture) {
-            if ($prefectureId && $prefectureId != $prefecture['prefecture_id']) {
+            if ($prefectureId && $prefectureId != $prefecture['id']) {
                 continue;
             }
 
             // 取得開始
-            $yearTarget = $start ?? date('Y');
+            $yearTarget = $start ?? self::$dateStart;
 
             // 取得年の最終がない場合は1年だけ取得する
             $yearCurrent = $end ?? $start;
 
-            self::$prefectureSelect = $prefecture['prefecture_id'];
-            self::$stationSelects = $prefecture['station'];
+            self::$prefectureSelect = $prefecture['id'];
+            self::$stationSelects = $prefecture['stations'];
 
             while ($yearTarget <= $yearCurrent) {
                 Log::debug(__LINE__

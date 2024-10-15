@@ -9,7 +9,9 @@ use Illuminate\Http\Request;
 
 class WeatherController extends Controller
 {
-    public function __construct()
+    public function __construct(
+		private Request $request
+    )
     {
     }
 
@@ -17,22 +19,22 @@ class WeatherController extends Controller
      * @param Request $request
      * @return JsonResponse
      */
-    public function get(Request $request): JsonResponse
+    public function get(): JsonResponse
     {
-        $prefectureId = $request->input('prefectureId');
-        $station = $request->input('station');
+        $prefectureId = $this->request->input('prefectureId');
+        $station = $this->request->input('station');
 
-        $dateStart = preg_match('/^(\d{4})(\d{2})(\d{2})$/', $request->input('startDate'), $match1)
+        $dateStart = preg_match('/^(\d{4})(\d{2})(\d{2})$/', $this->request->input('startDate'), $match1)
             ? $match1[1] . '-' . $match1[2] . '-' . $match1[3]
             : null;
 
-        $dateEnd = preg_match('/^(\d{4})(\d{2})(\d{2})$/', $request->input('endDate'), $match2)
+        $dateEnd = preg_match('/^(\d{4})(\d{2})(\d{2})$/', $this->request->input('endDate'), $match2)
             ? $match2[1] . '-' . $match2[2] . '-' . $match2[3]
             : null;
 
         $params = [
-            'prefecture_id' => $request->input('prefectureId'),
-            'station' => $request->input('station'),
+            'prefecture_id' => $this->request->input('prefectureId'),
+            'station' => $this->request->input('station'),
             'dateStart' => $dateStart,
             'dateEnd' => $dateEnd,
         ];
@@ -56,4 +58,15 @@ class WeatherController extends Controller
             ->header('Access-Control-Allow-Methods', 'GET')
             ->header('Access-Control-Allow-Headers', 'Accept, X-Requested-With, Origin, Content-Type');
     }
+
+	public function getConstants()
+	{
+		$results = WeatherService::getConstants();
+
+		return response()->json($results)
+			->header('Access-Controll-Allow-Origin', '*')
+			->header('Access-Control-Allow-Methods', 'GET')
+			->header('Access-Control-Allow-Headers', 'Accept, X-Requested-With, Origin, Content-Type');
+	}
+
 }

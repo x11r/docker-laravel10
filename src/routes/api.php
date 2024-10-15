@@ -27,5 +27,6 @@ Route::group(['prefix' => 'rakuten'], function () {
 });
 
 Route::group(['prefix' => 'weather'], function () {
+	Route::get('constants', [WeatherController::class, 'getConstants']);
 	Route::get('get', [WeatherController::class, 'get']);
 });
