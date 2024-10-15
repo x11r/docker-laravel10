@@ -41,7 +41,8 @@ class WeatherService
     // ブラウザーのダウンロードリトライ回数
     private static int $browserDownloadRetry = 0;
 
-    private static ?string $dateStart = null;
+    private static int $dateStart = 1980;
+
     private static ?string $dateEnd = null;
 
 	// YAMLファイルのファイル名(app/storageにある前提)
@@ -167,6 +168,70 @@ class WeatherService
 
         Log::info(__METHOD__ . ' [END]');
     }
+
+	/**
+	 * 回数の上限を設定して、全ての年と場所をダウンロードする
+	 * @return void
+	 */
+	public static function downloadWeatherCsvAll(): void
+	{
+		$start = config('app.WEATHER_YEAR_START');
+
+		$end = date('Y');
+
+		$constants = self::getConstants();
+
+		$prefectures = $constants['prefectures'] ?? [];
+
+		$shareDir = config('app.CHROMIUM_DOWNLOAD_DIR');
+
+		foreach ($prefectures as $prefecture) {
+
+			// 都道府県IDをセットする
+//			self::$prefectureSelect = $prefecture['prefecture_id'];
+
+			// ループ内の取得年
+			$yearTarget = $start;
+			while ($yearTarget <= $end) {
+
+				$downloadDir = $shareDir . DIRECTORY_SEPARATOR . $prefecture['id']
+					. DIRECTORY_SEPARATOR . $yearTarget;
+
+				if (! file_exists($downloadDir)) {
+					mkdir($downloadDir, 0777, true);
+				}
+
+				// CSVファイルのパス
+				$csvPath = $downloadDir . DIRECTORY_SEPARATOR . 'data.csv';
+
+				// ダウンロード実行
+				if (! file_exists($csvPath)) {
+					self::downloadWeatherCsv($prefecture['id'], $yearTarget, $yearTarget);
+				}
+
+				Log::debug(__LINE__
+					. ' [year] ' . $yearTarget
+//					. ' [prefecture] ' . print_r($prefecture, true)
+					. ' [download dir] ' . $downloadDir
+//					. ' [dir] ' . print_r($dir, true)
+					. ' [downloadCsvAllCount] ' . self::$downloadCsvAllCount
+				);
+
+				$yearTarget ++;
+			}
+		}
+
+		// このメソッドの実行回数を一つ上げる
+		self::$downloadCsvAllCount ++;
+
+		// 上限値寄り付くなければダウンロード実行する
+		if (self::$downloadCsvAllCount < self::$downloadCsvAllLimit) {
+			// 無限ループさせる
+			self::downloadWeatherCsvAll();
+		}
+
+		Log::info(__LINE__ . ' ' . __METHOD__ . ' [finish]');
+	}
 
     public static function downloadByBrowser($year = null, bool $override = false)
     {
