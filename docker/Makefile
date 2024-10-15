@@ -3,7 +3,6 @@ include ./.env
 
 app:
 	docker-compose exec app bash
-	#docker-compose exec --user root app bash
 	docker compose exec --user root app bash
 build:
 	docker compose up -d --build
@@ -27,15 +26,12 @@ rebuild:
 	docker compose up -d
 restart:
 	docker compose stop
-	# docker compose up --build -d
 	docker compose up -d
 stop:
 	docker compose stop
 test:
 	docker compose exec app php artisan test
 	docker-compose stop
-#test:
-	#docker-compose exec app php artisan test --coverage
 up:
 	docker compose up -d
 web:
