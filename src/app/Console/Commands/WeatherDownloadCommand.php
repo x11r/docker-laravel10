@@ -41,6 +41,12 @@ class WeatherDownloadCommand extends Command
             $start = config('app.WEATHER_YEAR_START');
             $end = date('Y');
         } elseif ($this->option('daily')) {
+
+			// 取得し続ける
+			WeatherService::downloadWeatherCsvAll();
+
+			return;
+        } else if ($this->option('daily')) {
             //
             $start = date('Y');
             $end = date('Y');
